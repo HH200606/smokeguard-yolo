@@ -988,20 +988,61 @@ function loadOrt(){
       if(typeof ort === 'undefined') throw new Error('ONNX 运行时未加载');
       const st = document.getElementById('modelStatus');
       if(st) st.textContent = '正在加载模型与运行时…';
-      // 运行时与模型作为独立静态文件，首屏只下载轻量 HTML
-      ort.env.wasm.wasmPaths = {'ort-wasm-simd.wasm': 'assets/ort-wasm-simd.wasm'};
+      // 三级源 × 压缩优先：CDN(国内加速) → GitHub Pages → 本地
+      // 预览沙箱 / file:// 下相对路径 fetch 会被拦截，自动走在线源
+      // gzip 版把 23MB 降到 9.6MB，跨境/移动网络下加载显著加快
       ort.env.wasm.numThreads = 1;
       ort.env.wasm.simd = true;
-      let modelBytes;
-      try{
-        const resp = await fetch(MODEL_URL);
-        if(!resp.ok) throw new Error('模型文件 HTTP ' + resp.status);
-        modelBytes = new Uint8Array(await resp.arrayBuffer());
-      }catch(err){
-        throw new Error('模型加载失败（需通过网页服务器访问，不能双击 file:// 打开本页）：' + err.message);
+      const GH = 'https://hh200606.github.io/smokeguard-yolo/';
+      const CDN = 'https://cdn.jsdelivr.net/gh/HH200606/smokeguard-yolo@main/';
+      const SOURCES = [
+        {name:'加速节点', base:CDN},
+        {name:'在线', base:GH},
+        {name:'本地', base:''}
+      ];
+      const gunzip = async (buf)=>{
+        if(typeof DecompressionStream === 'undefined') throw new Error('浏览器不支持解压');
+        const ds = new DecompressionStream('gzip');
+        const stream = new Blob([buf]).stream().pipeThrough(ds);
+        return new Uint8Array(await new Response(stream).arrayBuffer());
+      };
+      let modelBytes = null, useBase = '', srcName = '', lastErr = null;
+      // 每个源先试 .gz，失败再试原始；wasm 路径需与实际来源一致
+      let wasmRel = 'assets/ort-wasm-simd.wasm';
+      for(const src of SOURCES){
+        for(const [rel, zipped] of [[MODEL_URL+'.gz',true],[MODEL_URL,false]]){
+          try{
+            if(st) st.textContent = '正在加载模型 · ' + src.name + (zipped?' · 压缩':'') + '…';
+            const resp = await fetch(src.base + rel, {cache:'force-cache'});
+            if(!resp.ok) throw new Error('HTTP ' + resp.status);
+            let buf = new Uint8Array(await resp.arrayBuffer());
+            if(zipped) buf = await gunzip(buf);
+            if(buf.length < 1000000) throw new Error('文件不完整');
+            modelBytes = buf; useBase = src.base; srcName = src.name;
+            wasmRel = zipped ? 'assets/ort-wasm-simd.wasm.gz' : 'assets/ort-wasm-simd.wasm';
+            break;
+          }catch(err){ lastErr = err; }
+        }
+        if(modelBytes) break;
       }
+      if(!modelBytes) throw new Error('模型加载失败（加速节点/在线/本地均不可用）：' + (lastErr && lastErr.message));
+      // 若使用压缩 wasm，需先下载解压再喂给 ORT（wasmPaths 支持 Blob URL）
+      let wasmUrl = useBase + wasmRel;
+      if(wasmRel.endsWith('.gz')){
+        try{
+          if(st) st.textContent = '正在加载推理运行时 · ' + srcName + '…';
+          const wr = await fetch(wasmUrl, {cache:'force-cache'});
+          if(!wr.ok) throw new Error('wasm HTTP ' + wr.status);
+          let wb = new Uint8Array(await wr.arrayBuffer());
+          wb = await gunzip(wb);
+          wasmUrl = URL.createObjectURL(new Blob([wb], {type:'application/wasm'}));
+        }catch(err){
+          wasmUrl = useBase + 'assets/ort-wasm-simd.wasm'; // 回退原始
+        }
+      }
+      ort.env.wasm.wasmPaths = {'ort-wasm-simd.wasm': wasmUrl};
       ortSession = await ort.InferenceSession.create(modelBytes, {executionProviders:['wasm'], graphOptimizationLevel:'all'});
-      if(st) st.textContent = '模型已就绪 · 浏览器端 YOLO';
+      if(st) st.textContent = '模型已就绪 · ' + srcName + ' · 浏览器端 YOLO';
       resolve(ortSession);
     }catch(e){ ortFailed = true; reject(e); }
   });
