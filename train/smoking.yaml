@@ -1,0 +1,9 @@
+# YOLO 数据集配置 —— 从项目根目录运行训练脚本时使用
+# 路径由 train/voc_label.py 生成（data/train.txt 等，内部为图片绝对路径）
+train: data/train.txt
+val: data/val.txt
+test: data/test.txt
+
+# 类别数量与名称
+nc: 1
+names: ['smoking']
