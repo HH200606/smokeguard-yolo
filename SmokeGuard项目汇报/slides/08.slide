@@ -1,0 +1,51 @@
+<Slide style={{ width: 1280, height: 720, padding: 60, background: '#E3F1F8' }}>
+  <Box style={{ flexDirection: 'column', height: '100%' }}>
+    <Text style={{ fontFamily: 'Arial Narrow', fontSize: 14, fontWeight: 'bold', color: '#3B6BA0', letterSpacing: 2 }}>06 / TRAINING MONITOR</Text>
+    <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 36, fontWeight: 'bold', color: '#253649', marginTop: 6 }}>200 轮训练：损失收敛，mAP 提升</Text>
+    <Box style={{ width: 64, height: 3, background: '#5A7CB7', marginTop: 16 }} />
+
+    <Box style={{ flexDirection: 'row', flex: 1, marginTop: 26 }}>
+      <Box style={{ width: 700, flexDirection: 'column' }}>
+        <Chart
+          style={{ height: 400 }}
+          chartType='lineChart'
+          title='训练损失曲线（示意）'
+          titleColor='#253649'
+          showLegend={true}
+          showDataLabels={false}
+          legendColor='#425C86'
+          axisColor='#5A6B7B'
+          colors={['#5A7CB7', '#8FB0D6']}
+          background='#FFFFFF'
+          data={[
+            ['Epoch', 'box_loss', 'cls_loss'],
+            ['0', 0.092, 0.081],
+            ['20', 0.061, 0.052],
+            ['40', 0.048, 0.040],
+            ['60', 0.041, 0.034],
+            ['80', 0.037, 0.030],
+            ['100', 0.034, 0.027],
+            ['120', 0.032, 0.025],
+            ['140', 0.030, 0.024],
+            ['160', 0.029, 0.023],
+            ['180', 0.028, 0.022],
+            ['200', 0.027, 0.021],
+          ]}
+        />
+      </Box>
+
+      <Box style={{ flex: 1, paddingLeft: 28, flexDirection: 'column', justifyContent: 'center', gap: 18 }}>
+        <Box>
+          <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 19, fontWeight: 'bold', color: '#253649' }}>训练配置</Text>
+          <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 16, color: '#3B4A5B', lineHeight: 1.8, marginTop: 6 }}>yolov8s.pt 预训练<br />epochs 200 · imgsz 640<br />batch 16 · workers 0<br />自动判断 GPU / CPU</Text>
+        </Box>
+        <Box style={{ background: '#FFFFFF', borderRadius: 8, padding: '16px 18px', border: '1px solid #D0E0EC' }}>
+          <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 16, fontWeight: 'bold', color: '#253649' }}>如何换成真实曲线</Text>
+          <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 15, color: '#425C86', lineHeight: 1.6, marginTop: 6 }}>训练结束后运行 tools/plot_results.py，从 results.csv 导出真实损失与 mAP 数组替换示意数据。</Text>
+        </Box>
+      </Box>
+    </Box>
+
+    <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 13, color: '#6B7B8B', marginTop: 8 }}>注：曲线为演示用示意数据，用于展示训练监控模块的呈现方式。</Text>
+  </Box>
+</Slide>

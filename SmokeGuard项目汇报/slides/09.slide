@@ -1,0 +1,35 @@
+<Slide style={{ width: 1280, height: 720, padding: 60, background: '#0B1521' }}>
+  <Box style={{ flexDirection: 'column', height: '100%' }}>
+    <Text style={{ fontFamily: 'Arial Narrow', fontSize: 14, fontWeight: 'bold', color: '#63A7D4', letterSpacing: 2 }}>07 / DEPLOY & USAGE</Text>
+    <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 36, fontWeight: 'bold', color: '#FFFFFF', marginTop: 6 }}>三种打开方式，按需选择</Text>
+    <Box style={{ width: 64, height: 3, background: '#63A7D4', marginTop: 16 }} />
+
+    <Box style={{ flexDirection: 'row', gap: 20, marginTop: 32, flex: 1 }}>
+      <Box style={{ width: 480, background: '#63A7D4', borderRadius: 12, padding: 32, flexDirection: 'column' }}>
+        <Text style={{ fontFamily: 'Arial Narrow', fontSize: 16, fontWeight: 'bold', color: '#0F1920', letterSpacing: 1 }}>PRIMARY</Text>
+        <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 28, fontWeight: 'bold', color: '#0B1521', marginTop: 10 }}>本地双击</Text>
+        <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 18, color: '#17234D', lineHeight: 1.7, marginTop: 18 }}>双击 index.html 即可运行。模型与运行时全部内嵌，无需安装依赖、无需联网，上传图片检测完全可用。</Text>
+        <Box style={{ background: 'rgba(11,21,33,0.12)', borderRadius: 8, padding: '12px 16px', marginTop: 'auto' }}>
+          <Text style={{ fontFamily: 'Arial Narrow', fontSize: 16, color: '#0B1521' }}>index.html · 31 MB · offline</Text>
+        </Box>
+      </Box>
+
+      <Box style={{ flex: 1, flexDirection: 'column', gap: 20 }}>
+        <Box style={{ flex: 1, background: '#1B2C3D', borderRadius: 12, padding: 26, border: '1px solid #2C4256', flexDirection: 'column' }}>
+          <Text style={{ fontFamily: 'Arial Narrow', fontSize: 14, fontWeight: 'bold', color: '#63A7D4', letterSpacing: 1 }}>OPTION 01</Text>
+          <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 22, fontWeight: 'bold', color: '#FFFFFF', marginTop: 8 }}>本地服务器</Text>
+          <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 16, color: '#C9CCCE', lineHeight: 1.6, marginTop: 10 }}>摄像头需要安全上下文时，用 python -m http.server 8080 启动后访问 localhost。</Text>
+        </Box>
+        <Box style={{ flex: 1, background: '#1B2C3D', borderRadius: 12, padding: 26, border: '1px solid #2C4256', flexDirection: 'column' }}>
+          <Text style={{ fontFamily: 'Arial Narrow', fontSize: 14, fontWeight: 'bold', color: '#4DA3FF', letterSpacing: 1 }}>OPTION 02</Text>
+          <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 22, fontWeight: 'bold', color: '#FFFFFF', marginTop: 8 }}>在线体验 · GitHub Pages</Text>
+          <Text style={{ fontFamily: 'Arial Narrow', fontSize: 16, color: '#A9CFE7', lineHeight: 1.6, marginTop: 10 }}>hh200606.github.io/smokeguard-yolo</Text>
+        </Box>
+      </Box>
+    </Box>
+
+    <Box style={{ background: '#63A7D4', borderRadius: 8, padding: '16px 22px', marginTop: 20 }}>
+      <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 18, fontWeight: 'bold', color: '#FFFFFF' }}>可选：用自己的权重时，启动 FastAPI 后端并在网页切换到「本地后端」模式。</Text>
+    </Box>
+  </Box>
+</Slide>

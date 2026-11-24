@@ -1,0 +1,49 @@
+<Slide style={{ width: 1280, height: 720, padding: 0, background: '#0B1521', flexDirection: 'row' }}>
+  <Box style={{ width: 372, height: 720, background: '#63A7D4', padding: 60, flexDirection: 'column', justifyContent: 'center' }}>
+    <Text style={{ fontFamily: 'Arial Narrow', fontSize: 15, fontWeight: 'bold', color: '#0F1920', letterSpacing: 2 }}>04 / CORE SOLUTION</Text>
+    <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 48, fontWeight: 'bold', color: '#0B1521', lineHeight: 1.2, marginTop: 16 }}>浏览器端<br />真实推理</Text>
+    <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 20, color: '#17234D', lineHeight: 1.6, marginTop: 24 }}>640×640 输入，到带标签的检测框</Text>
+    <Box style={{ width: 72, height: 4, background: '#0B1521', marginTop: 32 }} />
+    <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 17, color: '#17234D', lineHeight: 1.6, marginTop: 24 }}>推理与渲染共用同一组归一化坐标，红框始终贴合画面中的目标。</Text>
+  </Box>
+
+  <Box style={{ flex: 1, height: 720, padding: '60px 60px 60px 48px', flexDirection: 'column', justifyContent: 'center' }}>
+    <Box style={{ flexDirection: 'column', gap: 20 }}>
+      <Box>
+        <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+          <Text style={{ fontFamily: 'Arial Narrow', fontSize: 24, fontWeight: 'bold', color: '#63A7D4' }}>01</Text>
+          <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 20, fontWeight: 'bold', color: '#FFFFFF' }}>预处理：整图直接缩放到 640×640</Text>
+        </Box>
+        <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 16, color: '#C9CCCE', lineHeight: 1.5, marginTop: 5, marginLeft: 44 }}>转为 RGB CHW 张量。必须直接 resize，不能加灰边 letterbox，否则置信度大幅下降。</Text>
+      </Box>
+      <Box>
+        <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+          <Text style={{ fontFamily: 'Arial Narrow', fontSize: 24, fontWeight: 'bold', color: '#63A7D4' }}>02</Text>
+          <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 20, fontWeight: 'bold', color: '#FFFFFF' }}>推理：ONNX Runtime Web · wasm</Text>
+        </Box>
+        <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 16, color: '#C9CCCE', lineHeight: 1.5, marginTop: 5, marginLeft: 44 }}>非线程版 wasm + base64 内嵌模型，单文件离线运行，不依赖任何外部脚本。</Text>
+      </Box>
+      <Box>
+        <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+          <Text style={{ fontFamily: 'Arial Narrow', fontSize: 24, fontWeight: 'bold', color: '#63A7D4' }}>03</Text>
+          <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 20, fontWeight: 'bold', color: '#FFFFFF' }}>解析：输出 [1, 7, 8400] + NMS</Text>
+        </Box>
+        <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 16, color: '#C9CCCE', lineHeight: 1.5, marginTop: 5, marginLeft: 44 }}>前 4 行为中心点与宽高，后 3 行为类别分数，逐类取最大值后做非极大值抑制。</Text>
+      </Box>
+      <Box>
+        <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+          <Text style={{ fontFamily: 'Arial Narrow', fontSize: 24, fontWeight: 'bold', color: '#63A7D4' }}>04</Text>
+          <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 20, fontWeight: 'bold', color: '#FFFFFF' }}>过滤：只保留香烟与烟雾</Text>
+        </Box>
+        <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 16, color: '#C9CCCE', lineHeight: 1.5, marginTop: 5, marginLeft: 44 }}>cls0 香烟、cls2 烟雾；过滤 cls1 人物大框，框上显示类别与置信度。</Text>
+      </Box>
+      <Box>
+        <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+          <Text style={{ fontFamily: 'Arial Narrow', fontSize: 24, fontWeight: 'bold', color: '#63A7D4' }}>05</Text>
+          <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 20, fontWeight: 'bold', color: '#FFFFFF' }}>对齐：object-fit 设为 fill</Text>
+        </Box>
+        <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 16, color: '#C9CCCE', lineHeight: 1.5, marginTop: 5, marginLeft: 44 }}>显示尺寸与推理尺寸保持线性映射，避免 cover 裁切造成的框位偏移。</Text>
+      </Box>
+    </Box>
+  </Box>
+</Slide>

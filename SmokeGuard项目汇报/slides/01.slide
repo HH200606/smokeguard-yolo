@@ -1,0 +1,23 @@
+<Slide style={{ width: 1280, height: 720, padding: 0, background: '#0B1521', position: 'relative' }}>
+  <Image src="assets/cover_hero.png" style={{ position: 'absolute', top: 0, left: 0, width: 1280, height: 720, objectFit: 'cover' }} />
+  <Box style={{ position: 'absolute', top: 0, left: 0, width: 1280, height: 720, background: 'linear-gradient(180deg, rgba(11,21,33,0.12) 0%, rgba(11,21,33,0.34) 42%, rgba(11,21,33,0.94) 100%)' }} />
+
+  <Box style={{ position: 'absolute', left: 80, top: 372, width: 1120, flexDirection: 'column' }}>
+    <Text style={{ fontFamily: 'Arial Narrow', fontSize: 16, fontWeight: 'bold', color: '#63A7D4', letterSpacing: 3, marginBottom: 10 }}>AI VISION · PROJECT SHOWCASE</Text>
+    <Text style={{ fontFamily: 'Arial Narrow', fontSize: 92, fontWeight: 'bold', color: '#FFFFFF', lineHeight: 1.02 }}>SmokeGuard</Text>
+    <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 30, fontWeight: 'bold', color: '#B9D7EC', marginTop: 12 }}>YOLO 吸烟行为检测可视化平台</Text>
+    <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 19, color: '#C9CCCE', lineHeight: 1.5, marginTop: 20 }}>从 6953 张标注图像，到浏览器端真实推理 —— 全流程可复现的智能检测闭环。</Text>
+
+    <Box style={{ flexDirection: 'row', gap: 12, marginTop: 26 }}>
+      <Box style={{ padding: '10px 18px', border: '1px solid rgba(99,167,212,0.55)', borderRadius: 8, background: 'rgba(35,44,55,0.55)' }}>
+        <Text style={{ fontFamily: 'Arial Narrow', fontSize: 16, color: '#E7E8E9' }}>YOLOv8s</Text>
+      </Box>
+      <Box style={{ padding: '10px 18px', border: '1px solid rgba(99,167,212,0.55)', borderRadius: 8, background: 'rgba(35,44,55,0.55)' }}>
+        <Text style={{ fontFamily: 'Arial Narrow', fontSize: 16, color: '#E7E8E9' }}>ONNX Runtime Web</Text>
+      </Box>
+      <Box style={{ padding: '10px 18px', border: '1px solid rgba(99,167,212,0.55)', borderRadius: 8, background: 'rgba(35,44,55,0.55)' }}>
+        <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 16, color: '#E7E8E9' }}>零依赖单文件</Text>
+      </Box>
+    </Box>
+  </Box>
+</Slide>

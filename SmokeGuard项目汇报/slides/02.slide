@@ -1,0 +1,24 @@
+<Slide style={{ width: 1280, height: 720, padding: 60, background: '#0B1521' }}>
+  <Box style={{ flexDirection: 'column', height: '100%' }}>
+    <Text style={{ fontFamily: 'Arial Narrow', fontSize: 15, color: '#63A7D4', letterSpacing: 3, fontWeight: 'bold' }}>CONTENTS</Text>
+    <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 44, color: '#FFFFFF', fontWeight: 'bold', marginTop: 6 }}>目录</Text>
+    <Box style={{ width: 72, height: 3, background: '#63A7D4', marginTop: 18, marginBottom: 30 }} />
+
+    <Box style={{ flexDirection: 'column' }}>
+      {[
+        ['01', '项目概述', '03'],
+        ['02', '数据集与标注', '04'],
+        ['03', '技术路线', '05'],
+        ['04', '核心技术方案', '06'],
+        ['05', '检测效果实测', '07'],
+        ['06', '训练、部署与成果', '08'],
+      ].map((row, i) => (
+        <Box key={i} style={{ flexDirection: 'row', alignItems: 'center', height: 66, borderBottom: '1px solid #2A3A4A' }}>
+          <Text style={{ fontFamily: 'Arial Narrow', fontSize: 30, color: '#63A7D4', fontWeight: 'bold', width: 90 }}>{row[0]}</Text>
+          <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 24, color: '#FFFFFF', fontWeight: 'bold', flex: 1 }}>{row[1]}</Text>
+          <Text style={{ fontFamily: 'Arial Narrow', fontSize: 18, color: '#87909B' }}>{row[2]}</Text>
+        </Box>
+      ))}
+    </Box>
+  </Box>
+</Slide>

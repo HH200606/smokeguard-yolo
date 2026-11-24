@@ -1,0 +1,45 @@
+=== boot pid=34952 ts=2026-11-24 21:56:30.913 cwd=C:\Users\哈小琴\WorkBuddy\2026-11-24-18-01-44\SmokeGuard项目汇报 argv=C:\Users\哈小琴\.workbuddy\binaries\node\versions\22.22.2-6\node_modules\@tencent\slidep\dist\index.js upsert-dsl SmokeGuard项目汇报.pptx --dsl-file slides/01.slide --project-dir . ===
+[2026-11-24 21:56:30.910] [INFO ] [pid=34952] [server-url] baseUrl=http://127.0.0.1:39099 source=env
+[2026-11-24 21:56:30.981] [INFO ] [pid=34952] [slide-version] fileId=sid_mwur version=0 filePath=C:\Users\哈小琴\WorkBuddy\2026-11-24-18-01-44\SmokeGuard项目汇报\SmokeGuard项目汇报.pptx
+=== boot pid=34432 ts=2026-11-24 21:56:44.346 cwd=C:\Users\哈小琴\WorkBuddy\2026-11-24-18-01-44\SmokeGuard项目汇报 argv=C:\Users\哈小琴\.workbuddy\binaries\node\versions\22.22.2-6\node_modules\@tencent\slidep\dist\index.js upsert-dsl SmokeGuard项目汇报.pptx --dsl-file slides/02.slide --project-dir . ===
+[2026-11-24 21:56:44.344] [INFO ] [pid=34432] [server-url] baseUrl=http://127.0.0.1:39099 source=env
+[2026-11-24 21:56:44.398] [INFO ] [pid=34432] [slide-version] fileId=sid_mwur version=1 filePath=C:\Users\哈小琴\WorkBuddy\2026-11-24-18-01-44\SmokeGuard项目汇报\SmokeGuard项目汇报.pptx
+=== boot pid=38612 ts=2026-11-24 21:57:27.603 cwd=C:\Users\哈小琴\WorkBuddy\2026-11-24-18-01-44\SmokeGuard项目汇报 argv=C:\Users\哈小琴\.workbuddy\binaries\node\versions\22.22.2-6\node_modules\@tencent\slidep\dist\index.js upsert-dsl SmokeGuard项目汇报.pptx --dsl-file slides/01.slide --page-index 0 --project-dir . ===
+[2026-11-24 21:57:27.601] [INFO ] [pid=38612] [server-url] baseUrl=http://127.0.0.1:39099 source=env
+[2026-11-24 21:57:27.655] [INFO ] [pid=38612] [slide-version] fileId=sid_mwur version=2 filePath=C:\Users\哈小琴\WorkBuddy\2026-11-24-18-01-44\SmokeGuard项目汇报\SmokeGuard项目汇报.pptx
+=== boot pid=39668 ts=2026-11-24 21:57:34.954 cwd=C:\Users\哈小琴\WorkBuddy\2026-11-24-18-01-44\SmokeGuard项目汇报 argv=C:\Users\哈小琴\.workbuddy\binaries\node\versions\22.22.2-6\node_modules\@tencent\slidep\dist\index.js upsert-dsl SmokeGuard项目汇报.pptx --dsl-file slides/02.slide --page-index 1 --project-dir . ===
+[2026-11-24 21:57:34.952] [INFO ] [pid=39668] [server-url] baseUrl=http://127.0.0.1:39099 source=env
+[2026-11-24 21:57:34.996] [INFO ] [pid=39668] [slide-version] fileId=sid_mwur version=3 filePath=C:\Users\哈小琴\WorkBuddy\2026-11-24-18-01-44\SmokeGuard项目汇报\SmokeGuard项目汇报.pptx
+=== boot pid=31872 ts=2026-11-24 21:58:05.482 cwd=C:\Users\哈小琴\WorkBuddy\2026-11-24-18-01-44\SmokeGuard项目汇报 argv=C:\Users\哈小琴\.workbuddy\binaries\node\versions\22.22.2-6\node_modules\@tencent\slidep\dist\index.js upsert-dsl SmokeGuard项目汇报.pptx --dsl-file slides/03.slide --project-dir . ===
+[2026-11-24 21:58:05.479] [INFO ] [pid=31872] [server-url] baseUrl=http://127.0.0.1:39099 source=env
+[2026-11-24 21:58:05.526] [INFO ] [pid=31872] [slide-version] fileId=sid_mwur version=4 filePath=C:\Users\哈小琴\WorkBuddy\2026-11-24-18-01-44\SmokeGuard项目汇报\SmokeGuard项目汇报.pptx
+=== boot pid=8268 ts=2026-11-24 21:58:19.221 cwd=C:\Users\哈小琴\WorkBuddy\2026-11-24-18-01-44\SmokeGuard项目汇报 argv=C:\Users\哈小琴\.workbuddy\binaries\node\versions\22.22.2-6\node_modules\@tencent\slidep\dist\index.js upsert-dsl SmokeGuard项目汇报.pptx --dsl-file slides/04.slide --project-dir . ===
+[2026-11-24 21:58:19.218] [INFO ] [pid=8268] [server-url] baseUrl=http://127.0.0.1:39099 source=env
+[2026-11-24 21:58:19.264] [INFO ] [pid=8268] [slide-version] fileId=sid_mwur version=5 filePath=C:\Users\哈小琴\WorkBuddy\2026-11-24-18-01-44\SmokeGuard项目汇报\SmokeGuard项目汇报.pptx
+=== boot pid=31204 ts=2026-11-24 21:58:52.062 cwd=C:\Users\哈小琴\WorkBuddy\2026-11-24-18-01-44\SmokeGuard项目汇报 argv=C:\Users\哈小琴\.workbuddy\binaries\node\versions\22.22.2-6\node_modules\@tencent\slidep\dist\index.js upsert-dsl SmokeGuard项目汇报.pptx --dsl-file slides/05.slide --project-dir . ===
+[2026-11-24 21:58:52.060] [INFO ] [pid=31204] [server-url] baseUrl=http://127.0.0.1:39099 source=env
+[2026-11-24 21:58:52.105] [INFO ] [pid=31204] [slide-version] fileId=sid_mwur version=6 filePath=C:\Users\哈小琴\WorkBuddy\2026-11-24-18-01-44\SmokeGuard项目汇报\SmokeGuard项目汇报.pptx
+=== boot pid=33796 ts=2026-11-24 21:59:03.246 cwd=C:\Users\哈小琴\WorkBuddy\2026-11-24-18-01-44\SmokeGuard项目汇报 argv=C:\Users\哈小琴\.workbuddy\binaries\node\versions\22.22.2-6\node_modules\@tencent\slidep\dist\index.js upsert-dsl SmokeGuard项目汇报.pptx --dsl-file slides/06.slide --project-dir . ===
+[2026-11-24 21:59:03.244] [INFO ] [pid=33796] [server-url] baseUrl=http://127.0.0.1:39099 source=env
+[2026-11-24 21:59:03.296] [INFO ] [pid=33796] [slide-version] fileId=sid_mwur version=7 filePath=C:\Users\哈小琴\WorkBuddy\2026-11-24-18-01-44\SmokeGuard项目汇报\SmokeGuard项目汇报.pptx
+=== boot pid=36412 ts=2026-11-24 21:59:27.964 cwd=C:\Users\哈小琴\WorkBuddy\2026-11-24-18-01-44\SmokeGuard项目汇报 argv=C:\Users\哈小琴\.workbuddy\binaries\node\versions\22.22.2-6\node_modules\@tencent\slidep\dist\index.js upsert-dsl SmokeGuard项目汇报.pptx --dsl-file slides/06.slide --page-index 5 --project-dir . ===
+[2026-11-24 21:59:27.961] [INFO ] [pid=36412] [server-url] baseUrl=http://127.0.0.1:39099 source=env
+[2026-11-24 21:59:28.020] [INFO ] [pid=36412] [slide-version] fileId=sid_mwur version=8 filePath=C:\Users\哈小琴\WorkBuddy\2026-11-24-18-01-44\SmokeGuard项目汇报\SmokeGuard项目汇报.pptx
+=== boot pid=23660 ts=2026-11-24 22:00:01.176 cwd=C:\Users\哈小琴\WorkBuddy\2026-11-24-18-01-44\SmokeGuard项目汇报 argv=C:\Users\哈小琴\.workbuddy\binaries\node\versions\22.22.2-6\node_modules\@tencent\slidep\dist\index.js upsert-dsl SmokeGuard项目汇报.pptx --dsl-file slides/07.slide --project-dir . ===
+[2026-11-24 22:00:01.174] [INFO ] [pid=23660] [server-url] baseUrl=http://127.0.0.1:39099 source=env
+[2026-11-24 22:00:01.231] [INFO ] [pid=23660] [slide-version] fileId=sid_mwur version=9 filePath=C:\Users\哈小琴\WorkBuddy\2026-11-24-18-01-44\SmokeGuard项目汇报\SmokeGuard项目汇报.pptx
+=== boot pid=24524 ts=2026-11-24 22:00:14.461 cwd=C:\Users\哈小琴\WorkBuddy\2026-11-24-18-01-44\SmokeGuard项目汇报 argv=C:\Users\哈小琴\.workbuddy\binaries\node\versions\22.22.2-6\node_modules\@tencent\slidep\dist\index.js upsert-dsl SmokeGuard项目汇报.pptx --dsl-file slides/08.slide --project-dir . ===
+[2026-11-24 22:00:14.459] [INFO ] [pid=24524] [server-url] baseUrl=http://127.0.0.1:39099 source=env
+[2026-11-24 22:00:14.501] [INFO ] [pid=24524] [slide-version] fileId=sid_mwur version=10 filePath=C:\Users\哈小琴\WorkBuddy\2026-11-24-18-01-44\SmokeGuard项目汇报\SmokeGuard项目汇报.pptx
+=== boot pid=32988 ts=2026-11-24 22:00:50.165 cwd=C:\Users\哈小琴\WorkBuddy\2026-11-24-18-01-44\SmokeGuard项目汇报 argv=C:\Users\哈小琴\.workbuddy\binaries\node\versions\22.22.2-6\node_modules\@tencent\slidep\dist\index.js upsert-dsl SmokeGuard项目汇报.pptx --dsl-file slides/09.slide --project-dir . ===
+[2026-11-24 22:00:50.164] [INFO ] [pid=32988] [server-url] baseUrl=http://127.0.0.1:39099 source=env
+[2026-11-24 22:00:50.199] [INFO ] [pid=32988] [slide-version] fileId=sid_mwur version=11 filePath=C:\Users\哈小琴\WorkBuddy\2026-11-24-18-01-44\SmokeGuard项目汇报\SmokeGuard项目汇报.pptx
+=== boot pid=13808 ts=2026-11-24 22:00:58.861 cwd=C:\Users\哈小琴\WorkBuddy\2026-11-24-18-01-44\SmokeGuard项目汇报 argv=C:\Users\哈小琴\.workbuddy\binaries\node\versions\22.22.2-6\node_modules\@tencent\slidep\dist\index.js upsert-dsl SmokeGuard项目汇报.pptx --dsl-file slides/10.slide --project-dir . ===
+[2026-11-24 22:00:58.860] [INFO ] [pid=13808] [server-url] baseUrl=http://127.0.0.1:39099 source=env
+[2026-11-24 22:00:58.908] [INFO ] [pid=13808] [slide-version] fileId=sid_mwur version=12 filePath=C:\Users\哈小琴\WorkBuddy\2026-11-24-18-01-44\SmokeGuard项目汇报\SmokeGuard项目汇报.pptx
+=== boot pid=39116 ts=2026-11-24 22:01:07.673 cwd=C:\Users\哈小琴\WorkBuddy\2026-11-24-18-01-44\SmokeGuard项目汇报 argv=C:\Users\哈小琴\.workbuddy\binaries\node\versions\22.22.2-6\node_modules\@tencent\slidep\dist\index.js upsert-dsl SmokeGuard项目汇报.pptx --dsl-file slides/11.slide --project-dir . ===
+[2026-11-24 22:01:07.671] [INFO ] [pid=39116] [server-url] baseUrl=http://127.0.0.1:39099 source=env
+[2026-11-24 22:01:07.715] [INFO ] [pid=39116] [slide-version] fileId=sid_mwur version=13 filePath=C:\Users\哈小琴\WorkBuddy\2026-11-24-18-01-44\SmokeGuard项目汇报\SmokeGuard项目汇报.pptx
+=== boot pid=29956 ts=2026-11-24 22:01:34.040 cwd=C:\Users\哈小琴\WorkBuddy\2026-11-24-18-01-44\SmokeGuard项目汇报 argv=C:\Users\哈小琴\.workbuddy\binaries\node\versions\22.22.2-6\node_modules\@tencent\slidep\dist\index.js upsert-dsl SmokeGuard项目汇报.pptx --dsl-file slides/10.slide --page-index 9 --project-dir . ===
+[2026-11-24 22:01:34.038] [INFO ] [pid=29956] [server-url] baseUrl=http://127.0.0.1:39099 source=env
+[2026-11-24 22:01:34.081] [INFO ] [pid=29956] [slide-version] fileId=sid_mwur version=0 filePath=C:\Users\哈小琴\WorkBuddy\2026-11-24-18-01-44\SmokeGuard项目汇报\SmokeGuard项目汇报.pptx

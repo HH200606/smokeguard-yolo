@@ -1,0 +1,41 @@
+<Slide style={{ width: 1280, height: 720, padding: 0, background: '#0B1521' }}>
+  <Image src="assets/tech_vision.png" style={{ position: 'absolute', top: 0, left: 0, width: 760, height: 720, objectFit: 'cover' }} />
+  <Box style={{ position: 'absolute', top: 0, left: 0, width: 760, height: 720, background: 'linear-gradient(90deg, rgba(11,21,33,0.05) 40%, rgba(11,21,33,0.98) 100%)' }} />
+
+  <Box style={{ position: 'absolute', left: 60, top: 56, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+    <Text style={{ fontFamily: 'Arial Narrow', fontSize: 14, fontWeight: 'bold', color: '#63A7D4', letterSpacing: 2 }}>01 / PROJECT OVERVIEW</Text>
+  </Box>
+
+  <Box style={{ position: 'absolute', left: 720, top: 92, width: 500, flexDirection: 'column' }}>
+    <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 36, fontWeight: 'bold', color: '#FFFFFF', lineHeight: 1.25 }}>浏览器里直接跑的<br />吸烟检测平台</Text>
+    <Box style={{ width: 64, height: 3, background: '#63A7D4', marginTop: 20, marginBottom: 24 }} />
+
+    <Box style={{ flexDirection: 'column', gap: 20 }}>
+      <Box style={{ flexDirection: 'row', gap: 14 }}>
+        <Text style={{ fontFamily: 'Arial Narrow', fontSize: 24, fontWeight: 'bold', color: '#63A7D4', width: 34 }}>01</Text>
+        <Box style={{ flex: 1 }}>
+          <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 20, fontWeight: 'bold', color: '#E7E8E9' }}>真实推理，不靠模拟</Text>
+          <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 17, color: '#C9CCCE', lineHeight: 1.5, marginTop: 4 }}>上传图片或开摄像头，浏览器端完成 YOLO 推理，红框直接落在香烟与烟雾上。</Text>
+        </Box>
+      </Box>
+      <Box style={{ flexDirection: 'row', gap: 14 }}>
+        <Text style={{ fontFamily: 'Arial Narrow', fontSize: 24, fontWeight: 'bold', color: '#63A7D4', width: 34 }}>02</Text>
+        <Box style={{ flex: 1 }}>
+          <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 20, fontWeight: 'bold', color: '#E7E8E9' }}>零依赖单文件</Text>
+          <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 17, color: '#C9CCCE', lineHeight: 1.5, marginTop: 4 }}>模型、wasm 运行时与界面全部内嵌进一个 31 MB 的 HTML，双击即用、离线可跑。</Text>
+        </Box>
+      </Box>
+      <Box style={{ flexDirection: 'row', gap: 14 }}>
+        <Text style={{ fontFamily: 'Arial Narrow', fontSize: 24, fontWeight: 'bold', color: '#63A7D4', width: 34 }}>03</Text>
+        <Box style={{ flex: 1 }}>
+          <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 20, fontWeight: 'bold', color: '#E7E8E9' }}>面向禁烟监管场景</Text>
+          <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 17, color: '#C9CCCE', lineHeight: 1.5, marginTop: 4 }}>走廊、园区、监控视角均可接入，自动识别吸烟线索并给出置信度。</Text>
+        </Box>
+      </Box>
+    </Box>
+
+    <Box style={{ background: '#63A7D4', borderRadius: 8, padding: '16px 22px', marginTop: 28 }}>
+      <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 18, fontWeight: 'bold', color: '#FFFFFF' }}>结论：从数据集到可交互检测，全流程本地闭环。</Text>
+    </Box>
+  </Box>
+</Slide>

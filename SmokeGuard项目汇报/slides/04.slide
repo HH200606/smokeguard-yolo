@@ -1,0 +1,56 @@
+<Slide style={{ width: 1280, height: 720, padding: 60, background: '#E3F1F8' }}>
+  <Box style={{ flexDirection: 'column', height: '100%' }}>
+    <Text style={{ fontFamily: 'Arial Narrow', fontSize: 14, fontWeight: 'bold', color: '#3B6BA0', letterSpacing: 2 }}>02 / DATASET & LABELS</Text>
+    <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 36, fontWeight: 'bold', color: '#253649', marginTop: 6 }}>6953 张标注图像，9:1 两级划分</Text>
+    <Box style={{ width: 64, height: 3, background: '#5A7CB7', marginTop: 16 }} />
+
+    <Box style={{ flexDirection: 'row', flex: 1, marginTop: 28, alignItems: 'stretch' }}>
+      <Box style={{ width: 400, flexDirection: 'column', justifyContent: 'center' }}>
+        <Text style={{ fontFamily: 'Arial Narrow', fontSize: 108, fontWeight: 'bold', color: '#253649', lineHeight: 1 }}>6953</Text>
+        <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 20, color: '#425C86', marginTop: 8 }}>张 JPG 图像 · 人工标注</Text>
+        <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 17, color: '#3B4A5B', lineHeight: 1.6, marginTop: 20 }}>按「trainval : test = 9 : 1」切分后，再按「train : val = 9 : 1」二次划分，固定种子可复现。</Text>
+        <Box style={{ flexDirection: 'row', gap: 24, marginTop: 24 }}>
+          <Box>
+            <Text style={{ fontFamily: 'Arial Narrow', fontSize: 30, fontWeight: 'bold', color: '#5A7CB7' }}>1</Text>
+            <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 15, color: '#3B4A5B' }}>类别 smoking</Text>
+          </Box>
+          <Box>
+            <Text style={{ fontFamily: 'Arial Narrow', fontSize: 30, fontWeight: 'bold', color: '#5A7CB7' }}>4</Text>
+            <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 15, color: '#3B4A5B' }}>类真实场景</Text>
+          </Box>
+        </Box>
+      </Box>
+
+      <Box style={{ flex: 1, flexDirection: 'column', paddingLeft: 28 }}>
+        <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 20, fontWeight: 'bold', color: '#253649' }}>数据划分比例</Text>
+        <Chart
+          style={{ height: 300, marginTop: 8 }}
+          chartType='doughnutChart'
+          showLegend={true}
+          showDataLabels={true}
+          legendColor='#425C86'
+          dataLabelColor='#FFFFFF'
+          colors={['#5A7CB7', '#8FB0D6', '#43608C']}
+          background='#E3F1F8'
+          data={[
+            ['划分', '数量'],
+            ['train', 5631],
+            ['val', 626],
+            ['test', 696],
+          ]}
+        />
+      </Box>
+    </Box>
+
+    <Box style={{ flexDirection: 'row', gap: 16, marginTop: 12 }}>
+      <Box style={{ flex: 1, background: '#FFFFFF', borderRadius: 8, padding: '14px 18px', border: '1px solid #D0E0EC' }}>
+        <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 16, fontWeight: 'bold', color: '#253649' }}>标注格式</Text>
+        <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 15, color: '#425C86', marginTop: 4 }}>Pascal VOC XML + YOLO TXT</Text>
+      </Box>
+      <Box style={{ flex: 1, background: '#FFFFFF', borderRadius: 8, padding: '14px 18px', border: '1px solid #D0E0EC' }}>
+        <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 16, fontWeight: 'bold', color: '#253649' }}>覆盖场景</Text>
+        <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 15, color: '#425C86', marginTop: 4 }}>园区 / 禁烟区 / 监控 / 无人机俯视</Text>
+      </Box>
+    </Box>
+  </Box>
+</Slide>

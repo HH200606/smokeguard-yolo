@@ -1,0 +1,42 @@
+<Slide style={{ width: 1280, height: 720, padding: 60, background: '#0B1521' }}>
+  <Box style={{ flexDirection: 'column', height: '100%' }}>
+    <Text style={{ fontFamily: 'Arial Narrow', fontSize: 14, fontWeight: 'bold', color: '#63A7D4', letterSpacing: 2 }}>03 / TECHNICAL ROADMAP</Text>
+    <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 36, fontWeight: 'bold', color: '#FFFFFF', marginTop: 6 }}>从数据到检测：六步闭环</Text>
+    <Box style={{ width: 64, height: 3, background: '#63A7D4', marginTop: 16 }} />
+
+    <Box style={{ position: 'relative', marginTop: 46, height: 300 }}>
+      <Box style={{ position: 'absolute', left: 30, right: 30, top: 62, height: 2, background: '#2C4256' }} />
+      <Box style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+        {[
+          ['01', '数据采集', '6953 JPG'],
+          ['02', '标注转换', 'VOC → YOLO'],
+          ['03', '模型训练', 'YOLOv8s'],
+          ['04', '格式导出', 'ONNX'],
+          ['05', '浏览器推理', 'ORT Web'],
+          ['06', '结果可视化', '检测框'],
+        ].map((s, i) => (
+          <Box key={i} style={{ width: 168, flexDirection: 'column', alignItems: 'center' }}>
+            <Box style={{ width: 56, height: 56, borderRadius: 28, background: i === 4 ? '#63A7D4' : '#1B2C3D', border: '2px solid #63A7D4', justifyContent: 'center', alignItems: 'center' }}>
+              <Text style={{ fontFamily: 'Arial Narrow', fontSize: 22, fontWeight: 'bold', color: i === 4 ? '#0B1521' : '#63A7D4' }}>{s[0]}</Text>
+            </Box>
+            <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 18, fontWeight: 'bold', color: '#FFFFFF', marginTop: 18 }}>{s[1]}</Text>
+            <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 15, color: '#87909B', marginTop: 6 }}>{s[2]}</Text>
+          </Box>
+        ))}
+      </Box>
+    </Box>
+
+    <Box style={{ background: '#1B2C3D', borderRadius: 8, border: '1px solid #2C4256', padding: '22px 26px', marginTop: 8, flexDirection: 'column' }}>
+      <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 18, fontWeight: 'bold', color: '#A9CFE7' }}>每一步的产物都可追溯</Text>
+      <Box style={{ flexDirection: 'row', gap: 40, marginTop: 14 }}>
+        <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 17, color: '#C9CCCE' }}>标签：data/labels/*.txt</Text>
+        <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 17, color: '#C9CCCE' }}>权重：runs/detect/train/weights/best.pt</Text>
+        <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 17, color: '#C9CCCE' }}>前端：内嵌模型 + wasm 的 index.html</Text>
+      </Box>
+    </Box>
+
+    <Box style={{ background: '#63A7D4', borderRadius: 8, padding: '16px 22px', marginTop: 20 }}>
+      <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 18, fontWeight: 'bold', color: '#FFFFFF' }}>结论：训练脚本与推理链路一一对应，用户可用自己的数据完整复现。</Text>
+    </Box>
+  </Box>
+</Slide>

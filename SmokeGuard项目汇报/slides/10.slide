@@ -1,0 +1,45 @@
+<Slide style={{ width: 1280, height: 720, padding: 60, background: '#0B1521' }}>
+  <Box style={{ flexDirection: 'column', height: '100%' }}>
+    <Text style={{ fontFamily: 'Arial Narrow', fontSize: 14, fontWeight: 'bold', color: '#63A7D4', letterSpacing: 2 }}>08 / HIGHLIGHTS</Text>
+    <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 36, fontWeight: 'bold', color: '#FFFFFF', marginTop: 6 }}>四项能力，构成完整检测闭环</Text>
+    <Box style={{ width: 64, height: 3, background: '#63A7D4', marginTop: 16 }} />
+
+    <Box style={{ flexDirection: 'row', gap: 16, marginTop: 34, flex: 1, alignItems: 'stretch' }}>
+      <Box style={{ width: 320, background: '#1B2C3D', borderRadius: 12, padding: 26, flexDirection: 'column', justifyContent: 'space-between' }}>
+        <Box>
+          <Text style={{ fontFamily: 'Arial Narrow', fontSize: 72, fontWeight: 'bold', color: '#63A7D4', lineHeight: 1 }}>6953</Text>
+          <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 20, fontWeight: 'bold', color: '#FFFFFF', marginTop: 12 }}>张标注图像</Text>
+        </Box>
+        <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 16, color: '#87909B', lineHeight: 1.5 }}>可复现的训练数据规模</Text>
+      </Box>
+
+      <Box style={{ width: 260, background: '#1B2C3D', borderRadius: 12, padding: 26, flexDirection: 'column', justifyContent: 'space-between' }}>
+        <Box>
+          <Text style={{ fontFamily: 'Arial Narrow', fontSize: 72, fontWeight: 'bold', color: '#4DA3FF', lineHeight: 1 }}>0</Text>
+          <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 20, fontWeight: 'bold', color: '#FFFFFF', marginTop: 12 }}>服务器依赖</Text>
+        </Box>
+        <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 16, color: '#87909B', lineHeight: 1.5 }}>推理完全在浏览器完成</Text>
+      </Box>
+
+      <Box style={{ flex: 1, background: '#63A7D4', borderRadius: 12, padding: 26, flexDirection: 'column', justifyContent: 'space-between' }}>
+        <Box>
+          <Text style={{ fontFamily: 'Arial Narrow', fontSize: 72, fontWeight: 'bold', color: '#0B1521', lineHeight: 1 }}>31<span style={{ fontSize: 32 }}> MB</span></Text>
+          <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 20, fontWeight: 'bold', color: '#0B1521', marginTop: 12 }}>单文件体积</Text>
+        </Box>
+        <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 16, color: '#17234D', lineHeight: 1.5 }}>模型 + wasm + 界面全部内嵌</Text>
+      </Box>
+
+      <Box style={{ width: 260, background: '#1B2C3D', borderRadius: 12, padding: 26, flexDirection: 'column', justifyContent: 'space-between' }}>
+        <Box>
+          <Text style={{ fontFamily: 'Arial Narrow', fontSize: 64, fontWeight: 'bold', color: '#A9CFE7', lineHeight: 1 }}>100<span style={{ fontSize: 28 }}>%</span></Text>
+          <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 20, fontWeight: 'bold', color: '#FFFFFF', marginTop: 12 }}>浏览器端推理</Text>
+        </Box>
+        <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 16, color: '#87909B', lineHeight: 1.5 }}>离线也能检测</Text>
+      </Box>
+    </Box>
+
+    <Box style={{ background: '#63A7D4', borderRadius: 8, padding: '18px 24px', marginTop: 24 }}>
+      <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 19, fontWeight: 'bold', color: '#FFFFFF' }}>结论：从数据集到可交互检测，全流程本地闭环、可复现、可直接演示。</Text>
+    </Box>
+  </Box>
+</Slide>

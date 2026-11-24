@@ -1,0 +1,14 @@
+<Slide style={{ width: 1280, height: 720, padding: 60, background: '#0B1521', flexDirection: 'column', justifyContent: 'center' }}>
+  <Box style={{ flexDirection: 'column', alignItems: 'center' }}>
+    <Text style={{ fontFamily: 'Arial Narrow', fontSize: 16, fontWeight: 'bold', color: '#63A7D4', letterSpacing: 4 }}>THANK YOU · Q&A</Text>
+    <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 46, fontWeight: 'bold', color: '#FFFFFF', lineHeight: 1.4, marginTop: 28, textAlign: 'center' }}>让禁烟监管<br />从人工值守走向智能识别</Text>
+    <Box style={{ width: 72, height: 4, background: '#63A7D4', marginTop: 30 }} />
+
+    <Box style={{ flexDirection: 'column', gap: 12, marginTop: 40, alignItems: 'center' }}>
+      <Text href="https://hh200606.github.io/smokeguard-yolo/" style={{ fontFamily: 'Arial Narrow', fontSize: 20, color: '#63A7D4', textDecoration: 'underline' }}>在线体验 · hh200606.github.io/smokeguard-yolo</Text>
+      <Text href="https://github.com/HH200606/smokeguard-yolo" style={{ fontFamily: 'Arial Narrow', fontSize: 20, color: '#63A7D4', textDecoration: 'underline' }}>源码仓库 · github.com/HH200606/smokeguard-yolo</Text>
+    </Box>
+
+    <Text style={{ fontFamily: 'Noto Sans SC', fontSize: 16, color: '#87909B', marginTop: 44 }}>SmokeGuard · YOLO 吸烟行为检测可视化平台</Text>
+  </Box>
+</Slide>
