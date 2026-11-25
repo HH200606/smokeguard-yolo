@@ -317,9 +317,10 @@ body.dark pre.code{background:#0B1412}
           <div class="ctrl-row">
             <label>置信度 <input type="range" id="confRange" min="0.05" max="0.9" step="0.01" value="0.10"><span class="val" id="confVal">0.10</span></label>
             <label>IoU <input type="range" id="iouRange" min="0.1" max="0.9" step="0.01" value="0.45"><span class="val" id="iouVal">0.45</span></label>
-            <label class="switch"><input type="checkbox" id="roiSwitch" checked>启用吸烟区分块推理</label>
+            <label class="switch"><input type="checkbox" id="roiSwitch" checked>启用吸烟区约束 + 分块推理</label>
             <label class="switch"><input type="checkbox" id="videoLoop" checked>视频循环播放</label>
           </div>
+          <p class="hint" style="margin:-4px 0 12px">开启约束后：先定位人体取上部 2/3 吸烟区，<b style="color:var(--green-d)">区外的检出（墙面、背景物件）直接丢弃</b>，区内再做 2×2 分块放大以找回细小的香烟；找不到人体时自动转保守模式，宁可漏检也不误报。</p>
           <div class="toolbar">
             <button class="btn" id="detectBtn">▶ 开始检测</button>
             <button class="btn ghost" id="pauseBtn" disabled>⏸ 暂停</button>
@@ -364,9 +365,9 @@ body.dark pre.code{background:#0B1412}
             </section>
             <aside class="ab-mid"><div class="bar">唯一变量</div><div class="note">同一模型<br>同一帧<br>只改推理策略</div></aside>
             <section class="ab-card">
-              <div class="ab-title b"><h4>分块推理后</h4><span class="tag">人体框 ROI 二次推理 · conf 0.10</span></div>
+              <div class="ab-title b"><h4>分块推理后</h4><span class="tag">人框区域约束 + 2×2 分块 · conf 0.10</span></div>
               <div class="ab-body">
-                <p class="ab-sub">先定位人体 → 取上部 2/3 吸烟区 → 区内二次推理 → 合并 NMS</p>
+                <p class="ab-sub">先定位人体 → 取上部 2/3 吸烟区 → 区外误检丢弃 + 区内 2×2 分块放大 → 合并 NMS</p>
                 <div class="ab-shot"><canvas id="abCanvasB"></canvas><div class="ph" id="abPhB">点击「运行 A/B 对照」查看</div><div class="count-badge" style="display:none" id="abBadgeB">检出框：<b>0</b></div></div>
                 <div class="ab-metrics"><div class="m"><div class="k">有效检出</div><div class="v" id="abBHit">—</div></div><div class="m warn"><div class="k">人框误检</div><div class="v" id="abBErr">—</div></div><div class="m"><div class="k">耗时 ms</div><div class="v" id="abBTime">—</div></div></div>
               </div>
@@ -520,24 +521,56 @@ async function inferCanvas(canvas,opt){
 }
 /* ROI: get_smoking_roi — keep top-left, cut bottom to 2/3 (or >= width) */
 function smokingROI(p,cut){cut=cut||0.3;const y2=Math.max(p[1]+p[3]*cut,p[1]+p[2]);return [p[0],p[1],p[2],y2-p[1]]}
-async function inferSmart(source,opt){
-  opt=opt||{};const conf=+($('#confRange')?$('#confRange').value:0.10),iou=+($('#iouRange')?$('#iouRange').value:0.45);
-  const t0=performance.now();const full=toCanvas(source);const base=await inferCanvas(full,{classes:[0,2],conf,iou});
-  const boxes=base.boxes.slice();let roiUsed=0;
-  if(opt.roi&&$('#roiSwitch')&&$('#roiSwitch').checked){
-    const persons=(await inferCanvas(full,{classes:[1],conf:0.25,iou:0.45,limit:12})).boxes;
-    for(const p of persons){
-      const r=smokingROI(p,0.3);if(r[2]<24||r[3]<24)continue;
+/* 框中心落在吸烟区内才算有效检出（区外目标按文章定义判为 notsmoking） */
+function centerInBox(b,r,margin){
+  margin=margin||0;
+  const cx=b[0]+b[2]/2,cy=b[1]+b[3]/2;
+  return cx>=r[0]-margin&&cx<=r[0]+r[2]+margin&&cy>=r[1]-margin&&cy<=r[1]+r[3]+margin;
+}
+/* 2×2 重叠分块：把细长香烟放大到接近训练尺度，专治小目标漏检 */
+async function inferTiled(full,rois,conf,iou){
+  const out=[];let tiles=0;
+  const halves=[[0,0],[.5,0],[0,.5],[.5,.5]];
+  for(const r of rois){
+    const sx=Math.max(0,r[0]),sy=Math.max(0,r[1]);
+    const sw=Math.min(640-sx,r[2]),sh=Math.min(640-sy,r[3]);
+    if(sw<48||sh<48)continue;
+    // 小 ROI 单次推理即可；大 ROI 才拆 2×2，避免视频模式下无谓的耗时
+    const blocks=(sw>=200&&sh>=160)?halves:[[0,0]];
+    const cw=Math.min(sw*(blocks.length>1?.62:1),640),ch=Math.min(sh*(blocks.length>1?.62:1),640);
+    for(const [ox,oy] of blocks){
+      const x=Math.max(0,Math.min(sx+sw*ox,640-cw));
+      const y=Math.max(0,Math.min(sy+sh*oy,640-ch));
       const sub=document.createElement('canvas');sub.width=640;sub.height=640;
-      const sx=Math.max(0,r[0]),sy=Math.max(0,r[1]),sw=Math.min(640-sx,r[2]),sh=Math.min(640-sy,r[3]);
-      if(sw<=0||sh<=0)continue;
-      sub.getContext('2d',{willReadFrequently:true}).drawImage(full,sx,sy,sw,sh,0,0,640,640);
-      const r2=await inferCanvas(sub,{classes:[0,2],conf:Math.max(0.06,conf-0.03),iou,limit:12});
-      for(const b of r2.boxes)boxes.push([sx+b[0]/640*sw,sy+b[1]/640*sh,b[2]/640*sw,b[3]/640*sh,b[4],b[5]]);
-      roiUsed++;
+      sub.getContext('2d',{willReadFrequently:true}).drawImage(full,x,y,cw,ch,0,0,640,640);
+      const rr=(await inferCanvas(sub,{classes:[0,2],conf:Math.max(.06,conf-.05),iou,limit:12})).boxes;
+      for(const b of rr)out.push([x+b[0]/640*cw,y+b[1]/640*ch,b[2]/640*cw,b[3]/640*ch,b[4],b[5]]);
+      tiles++;
     }
   }
-  return {boxes:nms(boxes,iou,30),ms:performance.now()-t0,roiUsed};
+  return {boxes:out,tiles};
+}
+async function inferSmart(source,opt){
+  opt=opt||{};const conf=+($('#confRange')?$('#confRange').value:0.10),iou=+($('#iouRange')?$('#iouRange').value:0.45);
+  const t0=performance.now();const full=toCanvas(source);
+  // 基础推理阈值抬高，先砍掉大量低质量背景候选
+  let boxes=(await inferCanvas(full,{classes:[0,2],conf:Math.max(conf,.15),iou})).boxes.slice();
+  let roiUsed=0,constrained=false;
+  if(opt.roi&&$('#roiSwitch')&&$('#roiSwitch').checked){
+    const persons=(await inferCanvas(full,{classes:[1],conf:0.25,iou:0.45,limit:12})).boxes;
+    if(persons.length){
+      const rois=persons.map(p=>smokingROI(p,0.3));
+      // 关键修复：吸烟区外的全帧误检一律丢弃（墙上物体、衣架等）
+      boxes=boxes.filter(b=>rois.some(r=>centerInBox(b,r,6)));
+      const tiled=await inferTiled(full,rois,conf,iou);
+      boxes=boxes.concat(tiled.boxes);
+      roiUsed=tiled.tiles;constrained=true;
+    }else{
+      // 画面里找不到人：保守输出，宁可漏检也不报背景误检
+      boxes=boxes.filter(b=>b[4]>=Math.max(0.35,conf*2.5));
+    }
+  }
+  return {boxes:nms(boxes,iou,30),ms:performance.now()-t0,roiUsed,constrained};
 }
 
 /* ---- State ---- */
@@ -775,19 +808,18 @@ async function runAB(){
     const A=await inferCanvas(full,{classes:[0,1,2],conf:0.25,iou:0.45,limit:30});
     const msA=performance.now()-tA;
     const tB=performance.now();
-    const base=(await inferCanvas(full,{classes:[0,2],conf:0.10,iou:0.45,limit:30})).boxes.slice();
     const persons=(await inferCanvas(full,{classes:[1],conf:0.25,iou:0.45,limit:12})).boxes;
-    let roi=0;
-    for(const p of persons){
-      const r=smokingROI(p,0.3);if(r[2]<24||r[3]<24)continue;
-      const sx=Math.max(0,r[0]),sy=Math.max(0,r[1]),sw=Math.min(640-sx,r[2]),sh=Math.min(640-sy,r[3]);if(sw<=0||sh<=0)continue;
-      const sub=document.createElement('canvas');sub.width=640;sub.height=640;
-      sub.getContext('2d',{willReadFrequently:true}).drawImage(full,sx,sy,sw,sh,0,0,640,640);
-      const r2=(await inferCanvas(sub,{classes:[0,2],conf:0.08,iou:0.45,limit:12})).boxes;
-      for(const b of r2)base.push([sx+b[0]/640*sw,sy+b[1]/640*sh,b[2]/640*sw,b[3]/640*sh,b[4],b[5]]);
-      roi++;
+    let B=[];
+    if(persons.length){
+      const rois=persons.map(p=>smokingROI(p,0.3));
+      const baseB=(await inferCanvas(full,{classes:[0,2],conf:0.15,iou:0.45,limit:30})).boxes
+        .filter(b=>rois.some(r=>centerInBox(b,r,6)));
+      const tiled=await inferTiled(full,rois,0.10,0.45);
+      B=nms(baseB.concat(tiled.boxes),0.45,30);
+    }else{
+      B=nms((await inferCanvas(full,{classes:[0,2],conf:0.32,iou:0.45,limit:30})).boxes,0.45,30);
     }
-    const B=nms(base,0.45,30),msB=performance.now()-tB;
+    const msB=performance.now()-tB;
     const ca=$('#abCanvasA'),cb=$('#abCanvasB');ca.width=560;ca.height=315;cb.width=560;cb.height=315;
     drawAB(ca,A.boxes);drawAB(cb,B);
     $('#abPhA').style.display='none';$('#abPhB').style.display='none';
