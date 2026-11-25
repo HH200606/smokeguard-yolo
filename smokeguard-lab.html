@@ -228,6 +228,7 @@ body.dark pre.code{background:#0B1412}
       <button class="icon-btn" id="menuBtn">☰</button>
       <div class="crumb">SmokeGuard Lab / <b id="crumbTitle">项目总览</b></div>
       <div class="spacer"></div>
+      <span style="font-size:11px;color:var(--faint);font-family:monospace" title="若此处不是 v2，说明浏览器加载了缓存旧版，请强制刷新">BUILD v2 · 2026-11-25</span>
       <div class="pill" id="enginePill"><span class="dot"></span><span id="engineText">浏览器端 YOLO · 真实推理</span></div>
       <button class="icon-btn" id="themeBtn" title="切换主题">◐</button>
     </header>
@@ -507,7 +508,11 @@ async function inferCanvas(canvas,opt){
   for(let i=0,j=0;i<data.length;i+=4,j++){input[j]=data[i]/255;input[640*640+j]=data[i+1]/255;input[2*640*640+j]=data[i+2]/255}
   const tensor=new ort.Tensor('float32',input,[1,3,640,640]);
   const t0=performance.now();const res=await s.run({images:tensor});const ms=performance.now()-t0;
-  const out=(res.output0||res[s.outputNames[0]]).data;const clsCount=out.length/8400-4;
+  // 兼容不同 ONNX Runtime 版本的输出键名：output0 / output / outputNames[0]
+  const outputTensor=res.output0||res.output||res[s.outputNames&&s.outputNames[0]]||res[Object.keys(res)[0]];
+  if(!outputTensor||!outputTensor.data)throw new Error('模型输出格式异常（无 tensor.data），请刷新页面重试');
+  const out=outputTensor.data;if(!out||out.length<8400*5)throw new Error('模型输出长度异常：'+(out&&out.length));
+  const clsCount=out.length/8400-4;
   const keep=opt.classes||(clsCount>=3?[0,2]:Array.from({length:clsCount},(_,i)=>i));
   const conf=opt.conf!=null?opt.conf:0.08,iou=opt.iou!=null?opt.iou:0.45;
   const boxes=[];
