@@ -542,23 +542,38 @@ async function inferSmart(source,opt){
 
 /* ---- State ---- */
 let mode='scene',currentScene='park',imgEl=null,videoEl=null,stream=null;
-let lastBoxes=[],frameCount=0,detecting=false,paused=false,recorder=null,recordChunks=[],loopTimer=null;
+let lastBoxes=[],frameCount=0,detecting=false,paused=false,recorder=null,recordChunks=[],loopTimer=null,rafId=null;
 const stageSource=$('#stageSource'),stageResult=$('#stageResult'),overlay=$('#overlay'),resultCanvas=$('#resultCanvas');
 function setBadge(t,live){const b=$('#sourceBadge');b.textContent=t;b.classList.toggle('live',!!live)}
-function clearStage(st){$$('img,video,canvas.sc',st).forEach(n=>{if(n!==resultCanvas)n.remove()});const ph=st.querySelector('.ph');if(ph)ph.style.display=''}
+function clearStage(st){$$('img,video',st).forEach(n=>n.remove())}
+function syncStage(live){
+  resultCanvas.style.display=live?'block':'none';
+  $('#emptyResult').style.display=live?'none':'grid';
+  const sp=stageSource.querySelector('.ph');if(sp)sp.style.display=live?'none':'grid';
+}
+function stopRenderLoop(){if(rafId!=null){cancelAnimationFrame(rafId);rafId=null}}
+function ensureRenderLoop(){
+  if(rafId!=null)return;
+  const loop=()=>{
+    const src=(mode==='video'||mode==='camera')?stageSource.querySelector('video'):null;
+    if(!src){rafId=null;return}
+    drawVideoFrame();rafId=requestAnimationFrame(loop);
+  };
+  rafId=requestAnimationFrame(loop);
+}
 function stopCam(){if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}}
 function stopVideo(){if(videoEl){videoEl.pause();videoEl.removeAttribute('src');videoEl.load();videoEl=null}if(loopTimer){clearTimeout(loopTimer);loopTimer=null}}
 function reset(){
   detecting=false;paused=false;lastBoxes=[];videoResults=[];frameCount=0;
   $('#detectBtn').disabled=false;$('#detectBtn').textContent='▶ 开始检测';$('#pauseBtn').disabled=true;
-  overlay.innerHTML='';resultCanvas.style.display='none';
+  overlay.innerHTML='';syncStage(mode==='video'||mode==='camera');
   $('#emptyResult').style.display='grid';$('#resultBadge').textContent='DETECT';$('#resultBadge').classList.remove('live');
   $('#statCount').textContent='0';$('#statConf').textContent='--';$('#statTime').textContent='--';$('#statFrames').textContent='0';
   $('#resultList').innerHTML='<div class="empty">暂无检测结果</div>';
   $('#expVideo').disabled=true;$('#exportHint').textContent='先运行检测以生成可导出数据';
 }
 function loadScene(k){
-  stopCam();stopVideo();reset();currentScene=k;mode='scene';imgEl=null;
+  stopCam();stopVideo();stopRenderLoop();mode='scene';reset();currentScene=k;imgEl=null;
   $$('#sceneChips .chip').forEach(c=>c.classList.toggle('active',c.dataset.scene===k));
   $('#sourceName').textContent='内置场景 · '+SCENES[k].label;setBadge('SOURCE');
   const img=new Image();
@@ -568,31 +583,30 @@ function loadScene(k){
     clearStage(stageSource);clearStage(stageResult);
     stageSource.insertAdjacentHTML('afterbegin',`<img src="${img.src}" alt="${SCENES[k].label}">`);
     stageResult.insertAdjacentHTML('afterbegin',`<img src="${img.src}" alt="${SCENES[k].label}">`);
-    imgEl=img;mode='image';$('#sourceName').textContent='内置场景 · '+SCENES[k].label+' · 实景照片';setBadge('PHOTO');
+    imgEl=img;mode='image';syncStage(false);$('#sourceName').textContent='内置场景 · '+SCENES[k].label+' · 实景照片';setBadge('PHOTO');
   };
-  img.onerror=()=>{if(!isLocal){const alt=new Image();alt.src='assets/scenes/'+SCENES[k].file;alt.onload=()=>{if(mode!=='scene')return;imgEl=alt;mode='image';clearStage(stageSource);clearStage(stageResult);stageSource.insertAdjacentHTML('afterbegin',`<img src="${alt.src}">`);stageResult.insertAdjacentHTML('afterbegin',`<img src="${alt.src}">`);setBadge('PHOTO')}}};
+  img.onerror=()=>{if(!isLocal){const alt=new Image();alt.src='assets/scenes/'+SCENES[k].file;alt.onload=()=>{if(mode!=='scene')return;imgEl=alt;mode='image';clearStage(stageSource);clearStage(stageResult);stageSource.insertAdjacentHTML('afterbegin',`<img src="${alt.src}">`);stageResult.insertAdjacentHTML('afterbegin',`<img src="${alt.src}">`);syncStage(false);setBadge('PHOTO')}}};
   img.src=sceneUrl(k);
 }
 $$('#sceneChips .chip').forEach(c=>c.addEventListener('click',()=>loadScene(c.dataset.scene)));
 
 /* ---- Inputs ---- */
 $('#fileImg').addEventListener('change',e=>{
-  const f=e.target.files[0];if(!f)return;stopCam();stopVideo();reset();
+  const f=e.target.files[0];if(!f)return;stopCam();stopVideo();stopRenderLoop();reset();
   const url=URL.createObjectURL(f),img=new Image();
-  img.onload=()=>{mode='image';imgEl=img;clearStage(stageSource);clearStage(stageResult);stageSource.insertAdjacentHTML('afterbegin',`<img src="${url}">`);stageResult.insertAdjacentHTML('afterbegin',`<img src="${url}">`);$('#sourceName').textContent=f.name;setBadge('IMAGE')};
+  img.onload=()=>{mode='image';imgEl=img;clearStage(stageSource);clearStage(stageResult);stageSource.insertAdjacentHTML('afterbegin',`<img src="${url}">`);stageResult.insertAdjacentHTML('afterbegin',`<img src="${url}">`);syncStage(false);$('#sourceName').textContent=f.name;setBadge('IMAGE')};
   img.src=url;e.target.value='';
 });
 $('#fileVideo').addEventListener('change',e=>{
-  const f=e.target.files[0];if(!f)return;stopCam();reset();
+  const f=e.target.files[0];if(!f)return;stopCam();stopRenderLoop();reset();
   const url=URL.createObjectURL(f),v=document.createElement('video');
   v.src=url;v.muted=true;v.playsInline=true;v.loop=$('#videoLoop').checked;v.preload='auto';
   v.onloadeddata=()=>{
     mode='video';videoEl=v;clearStage(stageSource);clearStage(stageResult);
     stageSource.insertBefore(v,stageSource.firstChild);
     resultCanvas.width=v.videoWidth||1280;resultCanvas.height=v.videoHeight||720;
-    resultCanvas.style.display='block';$('#emptyResult').style.display='none';
+    syncStage(true);ensureRenderLoop();
     $('#sourceName').textContent=f.name+' · '+Math.round(v.duration)+'s';setBadge('VIDEO',true);
-    v.onseeked=()=>drawVideoFrame();
   };
   v.play().catch(()=>{});e.target.value='';
 });
@@ -605,9 +619,8 @@ $('#camBtn').addEventListener('click',async()=>{
     stopVideo();reset();mode='camera';
     const v=document.createElement('video');v.className='scene';v.autoplay=true;v.muted=true;v.playsInline=true;v.srcObject=stream;
     clearStage(stageSource);clearStage(stageResult);stageSource.insertBefore(v,stageSource.firstChild);
-    resultCanvas.width=1280;resultCanvas.height=720;resultCanvas.style.display='block';$('#emptyResult').style.display='none';
+    resultCanvas.width=1280;resultCanvas.height=720;syncStage(true);ensureRenderLoop();
     $('#sourceName').textContent='摄像头实时画面';setBadge('REC',true);$('#camBtn').textContent='⏹ 关闭摄像头';
-    drawVideoFrame();
   }catch(err){alert('摄像头打开失败：'+(err.message||err)+'\n可点击「新窗口打开」后重试')}
 });
 
@@ -619,13 +632,13 @@ function renderList(boxes){
 }
 function renderOverlay(boxes){
   overlay.innerHTML=boxes.map((b,i)=>`<div class="dbox ${b[5]===2?'cs':''}" style="left:${(b[0]/640*100).toFixed(2)}%;top:${(b[1]/640*100).toFixed(2)}%;width:${(b[2]/640*100).toFixed(2)}%;height:${(b[3]/640*100).toFixed(2)}%;animation-delay:${i*50}ms"><span class="lbl">${b[5]===2?'smoke':'cigarette'} ${b[4].toFixed(2)}</span></div>`).join('');
-  $('#emptyResult').style.display=boxes.length?'none':'grid';
+  if(!(mode==='video'||mode==='camera'))$('#emptyResult').style.display=boxes.length?'none':'grid';
   const badge=$('#resultBadge');badge.textContent=boxes.length?`DETECTED ${boxes.length}`:'NO TARGET';badge.classList.toggle('live',boxes.length>0);
   $('#statCount').textContent=boxes.length;$('#statConf').textContent=boxes.length?Math.max(...boxes.map(b=>b[4])).toFixed(2):'--';
   renderList(boxes);
 }
-function drawBoxesOnCanvas(ctx,boxes,W,H,scale){
-  ctx.clearRect(0,0,W,H);
+function drawBoxesOnCanvas(ctx,boxes,W,H,scale,clear){
+  if(clear!==false)ctx.clearRect(0,0,W,H);
   boxes.forEach(b=>{
     const x=b[0]*scale,y=b[1]*scale,w=b[2]*scale,h=b[3]*scale;
     ctx.strokeStyle=boxColor(b[5]);ctx.lineWidth=Math.max(2,W/500);ctx.strokeRect(x,y,w,h);
@@ -636,10 +649,12 @@ function drawBoxesOnCanvas(ctx,boxes,W,H,scale){
   });
 }
 function drawVideoFrame(){
-  if(!videoEl||!resultCanvas||!resultCanvas.width)return;
-  const ctx=resultCanvas.getContext('2d');
-  ctx.drawImage(videoEl,0,0,resultCanvas.width,resultCanvas.height);
-  drawBoxesOnCanvas(ctx,lastBoxes,resultCanvas.width,resultCanvas.height,resultCanvas.width/640);
+  const src=(mode==='video'||mode==='camera')?stageSource.querySelector('video'):null;
+  if(!src||!src.videoWidth||!resultCanvas||!resultCanvas.width)return;
+  const ctx=resultCanvas.getContext('2d'),W=resultCanvas.width,H=resultCanvas.height;
+  ctx.clearRect(0,0,W,H);
+  ctx.drawImage(src,0,0,W,H);
+  drawBoxesOnCanvas(ctx,lastBoxes,W,H,W/640,false);
 }
 
 /* ---- Detection dispatch ---- */
@@ -716,7 +731,7 @@ function exportFrame(){
   if(!src){toast('没有可导出的画面');return}
   const c=document.createElement('canvas');c.width=src.naturalWidth||src.width||640;c.height=src.naturalHeight||src.height||400;
   const ctx=c.getContext('2d');ctx.drawImage(src,0,0,c.width,c.height);
-  drawBoxesOnCanvas(ctx,lastBoxes,c.width,c.height,c.width/640);
+  if(!(mode==='video'||mode==='camera'))drawBoxesOnCanvas(ctx,lastBoxes,c.width,c.height,c.width/640,false);
   c.toBlob(b=>{if(b){download(b,'smokeguard_frame.png');toast('标注帧已导出')}},'image/png');
 }
 $('#expJson').addEventListener('click',exportJSON);$('#expCsv').addEventListener('click',exportCSV);$('#expFrame').addEventListener('click',exportFrame);
