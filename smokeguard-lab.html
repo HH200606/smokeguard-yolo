@@ -237,7 +237,7 @@ body.dark pre.code{background:#0B1412}
       <section class="section active" id="sec-overview">
         <div class="hero">
           <h2>从数据集到产品：吸烟检测可视化全链路</h2>
-          <p>基于两篇公开数据集资料重构的演示平台：整合吸烟分类集、视频抽帧集与标注检测集的数据规格，用浏览器端真实 YOLO 推理完成图片 / 视频 / 摄像头检测，并把「基线 → 分块推理」的迁移过程直接呈现在检测演示里。</p>
+          <p>基于两篇公开数据集资料重构的演示平台：整合吸烟分类集、视频抽帧集与标注检测集的数据规格，用浏览器端真实 YOLO 推理完成图片 / 视频 / 摄像头检测，并把「基线 → 精确约束」的迁移过程直接呈现在检测演示里。</p>
           <div class="chips"><span class="chip">🎯 浏览器端真实推理</span><span class="chip">🎬 视频逐帧检测</span><span class="chip">📤 结果导出 JSON / CSV</span><span class="chip">🔁 A/B 对照内嵌</span></div>
         </div>
         <div class="grid g4">
@@ -274,7 +274,7 @@ body.dark pre.code{background:#0B1412}
             <div><div class="roi-box"><div class="person"></div><div class="lbl">人体检测框</div></div></div>
             <div class="roi-arrow">→</div>
             <div><div class="roi-box"><div class="person"></div><div class="roi"></div><div class="lbl">吸烟检测区（上部 2/3）</div></div></div>
-            <div style="max-width:330px;font-size:12.5px;color:var(--muted)"><b style="color:var(--green-d);display:block;margin-bottom:5px">为什么要分块？</b>香烟在整帧中占比极小，直接缩放到 640 后特征几乎丢失。先用人框定位、再对Upper ROI 二次推理，等于把小目标「放大」后再看，这正是 A/B 对照里检出数提升的来源。</div>
+            <div style="max-width:330px;font-size:12.5px;color:var(--muted)"><b style="color:var(--green-d);display:block;margin-bottom:5px">为什么要用吸烟区约束？</b>模型在整帧上已能较好定位香烟，但墙面、衣架等背景偶尔会被误判为烟。用人框上部 2/3 圈定吸烟区，只保留区内（或高置信）检出，即可滤掉背景误检——这正是 A/B 对照里「优化后」更干净的原因。</div>
           </div>
         </div>
         <div class="grid g2">
@@ -298,7 +298,7 @@ body.dark pre.code{background:#0B1412}
 
       <!-- ============ DETECT ============ -->
       <section class="section" id="sec-detect">
-        <div class="sec-head"><h2>检测演示</h2><p>图片 / 视频 / 摄像头三路输入，浏览器端真实推理；下方内嵌 A/B 对照，展示从基线到分块推理的过程。</p></div>
+        <div class="sec-head"><h2>检测演示</h2><p>图片 / 视频 / 摄像头三路输入，浏览器端真实推理；下方内嵌 A/B 对照，展示从基线到精确约束的过程。</p></div>
 
         <div class="card">
           <h3>① 选择输入源</h3>
@@ -315,12 +315,12 @@ body.dark pre.code{background:#0B1412}
             <div><div class="stage-label"><b>检测结果</b><span class="badge" id="resultBadge">DETECT</span></div><div class="stage-box" id="stageResult"><div class="ph" id="emptyResult">点击「开始检测」查看结果</div><canvas class="sc" id="resultCanvas" style="display:none"></canvas><div class="ovl" id="overlay"></div></div></div>
           </div>
           <div class="ctrl-row">
-            <label>置信度 <input type="range" id="confRange" min="0.05" max="0.9" step="0.01" value="0.10"><span class="val" id="confVal">0.10</span></label>
+            <label>置信度 <input type="range" id="confRange" min="0.05" max="0.9" step="0.01" value="0.25"><span class="val" id="confVal">0.25</span></label>
             <label>IoU <input type="range" id="iouRange" min="0.1" max="0.9" step="0.01" value="0.45"><span class="val" id="iouVal">0.45</span></label>
-            <label class="switch"><input type="checkbox" id="roiSwitch" checked>启用吸烟区约束 + 分块推理</label>
+            <label class="switch"><input type="checkbox" id="roiSwitch" checked>启用吸烟区约束</label>
             <label class="switch"><input type="checkbox" id="videoLoop" checked>视频循环播放</label>
           </div>
-          <p class="hint" style="margin:-4px 0 12px">开启约束后：先定位人体取上部 2/3 吸烟区，<b style="color:var(--green-d)">区外的检出（墙面、背景物件）直接丢弃</b>，区内再做 2×2 分块放大以找回细小的香烟；找不到人体时自动转保守模式，宁可漏检也不误报。</p>
+          <p class="hint" style="margin:-4px 0 12px">模型在整帧上定位香烟/烟雾；开启约束后，先定位人体取上部 2/3 吸烟区，<b style="color:var(--green-d)">区外的低置信检出（墙面、背景物件）被滤掉</b>，高置信目标始终保留，避免误杀嘴边真烟。</p>
           <div class="toolbar">
             <button class="btn" id="detectBtn">▶ 开始检测</button>
             <button class="btn ghost" id="pauseBtn" disabled>⏸ 暂停</button>
@@ -351,30 +351,30 @@ body.dark pre.code{background:#0B1412}
         <!-- ========== A/B PANEL ========== -->
         <div class="card" id="abPanel">
           <div class="ab-head">
-            <div><h3>③ 检测演示 · A/B 对照</h3><p>同一帧、同一模型，只改变推理策略 —— 用实测检出数量说明「基线 → 分块推理」的收益。</p></div>
+            <div><h3>③ 检测演示 · A/B 对照</h3><p>同一帧、同一模型，只改变推理策略 —— 用实测结果说明「基线 → 精确约束」的收益。</p></div>
             <button class="btn" id="abRunBtn">▶ 运行 A/B 对照</button>
           </div>
           <div class="ab-wrap">
             <section class="ab-card">
-              <div class="ab-title"><h4>基线</h4><span class="tag">整帧单次推理 · conf 0.25</span></div>
+              <div class="ab-title"><h4>基线</h4><span class="tag">全类别低阈值 · conf 0.10</span></div>
               <div class="ab-body">
-                <p class="ab-sub">整帧直接 resize 640 · 全类别取最大（含人框）· 单次推理</p>
-                <div class="ab-shot"><canvas id="abCanvasA"></canvas><div class="ph" id="abPhA">点击「运行 A/B 对照」查看</div><div class="count-badge" style="display:none" id="abBadgeA">检出框：<b>0</b></div></div>
+                <p class="ab-sub">整帧 resize 640 · 含人框与背景低分候选 · 不做区域约束</p>
+                <div class="ab-shot"><canvas id="abCanvasA"></canvas><div class="ph" id="abPhA">点击「运行 A/B 对照」查看</div><div class="count-badge" style="display:none" id="abBadgeA">有效检出：<b>0</b></div></div>
                 <div class="ab-metrics"><div class="m"><div class="k">有效检出</div><div class="v" id="abAHit">—</div></div><div class="m warn"><div class="k">人框误检</div><div class="v" id="abAErr">—</div></div><div class="m"><div class="k">耗时 ms</div><div class="v" id="abATime">—</div></div></div>
               </div>
             </section>
             <aside class="ab-mid"><div class="bar">唯一变量</div><div class="note">同一模型<br>同一帧<br>只改推理策略</div></aside>
             <section class="ab-card">
-              <div class="ab-title b"><h4>分块推理后</h4><span class="tag">人框区域约束 + 2×2 分块 · conf 0.10</span></div>
+              <div class="ab-title b"><h4>精确约束后</h4><span class="tag">烟类 + 吸烟区约束 · conf 0.25</span></div>
               <div class="ab-body">
-                <p class="ab-sub">先定位人体 → 取上部 2/3 吸烟区 → 区外误检丢弃 + 区内 2×2 分块放大 → 合并 NMS</p>
-                <div class="ab-shot"><canvas id="abCanvasB"></canvas><div class="ph" id="abPhB">点击「运行 A/B 对照」查看</div><div class="count-badge" style="display:none" id="abBadgeB">检出框：<b>0</b></div></div>
+                <p class="ab-sub">只取香烟/烟雾类 → 人框上部 2/3 吸烟区 → 滤掉区外低分误检、保留高置信目标 → NMS</p>
+                <div class="ab-shot"><canvas id="abCanvasB"></canvas><div class="ph" id="abPhB">点击「运行 A/B 对照」查看</div><div class="count-badge" style="display:none" id="abBadgeB">有效检出：<b>0</b></div></div>
                 <div class="ab-metrics"><div class="m"><div class="k">有效检出</div><div class="v" id="abBHit">—</div></div><div class="m warn"><div class="k">人框误检</div><div class="v" id="abBErr">—</div></div><div class="m"><div class="k">耗时 ms</div><div class="v" id="abBTime">—</div></div></div>
               </div>
             </section>
           </div>
           <div class="ab-caption"><span class="line"></span><b>同一帧吸烟检测 A/B 对比图</b>（真实推理结果）<span class="line"></span></div>
-          <div class="ab-legend"><span><i style="background:#22C55E"></i>香烟 cigarette</span><span><i style="background:#FFB020"></i>烟雾 smoke</span><span><i style="background:#9AA5A1"></i>人框 person（基线误检）</span><span>基线 A 复刻旧配置，分块 B 为当前增强配置</span></div>
+          <div class="ab-legend"><span><i style="background:#22C55E"></i>香烟 cigarette</span><span><i style="background:#FFB020"></i>烟雾 smoke</span><span><i style="background:#9AA5A1"></i>人框 person（基线误检）</span><span>基线 A 复刻旧配置，B 为当前「有效检出」配置</span></div>
           <div class="story">
             <div class="s"><span class="n">01</span><b>数据层</b><span>整合 15000+ / 1831 / 6953 三组数据规格</span></div>
             <div class="s"><span class="n">02</span><b>规则层</b><span>引入 get_smoking_roi 吸烟检测区定义</span></div>
@@ -519,55 +519,28 @@ async function inferCanvas(canvas,opt){
   }
   return {boxes:nms(boxes,iou,opt.limit||30),ms};
 }
-/* ROI: get_smoking_roi — keep top-left, cut bottom to 2/3 (or >= width) */
-function smokingROI(p,cut){cut=cut||0.3;const y2=Math.max(p[1]+p[3]*cut,p[1]+p[2]);return [p[0],p[1],p[2],y2-p[1]]}
+/* ROI: 取人框上部 2/3 为吸烟区（参考 get_smoking_roi），高度按人框高度计算，不再误用宽度 */
+function smokingROI(p,cut){cut=cut||0.33;return [p[0],p[1],p[2],Math.max(24,p[3]*(1-cut))]}
 /* 框中心落在吸烟区内才算有效检出（区外目标按文章定义判为 notsmoking） */
 function centerInBox(b,r,margin){
   margin=margin||0;
   const cx=b[0]+b[2]/2,cy=b[1]+b[3]/2;
   return cx>=r[0]-margin&&cx<=r[0]+r[2]+margin&&cy>=r[1]-margin&&cy<=r[1]+r[3]+margin;
 }
-/* 2×2 重叠分块：把细长香烟放大到接近训练尺度，专治小目标漏检 */
-async function inferTiled(full,rois,conf,iou){
-  const out=[];let tiles=0;
-  const halves=[[0,0],[.5,0],[0,.5],[.5,.5]];
-  for(const r of rois){
-    const sx=Math.max(0,r[0]),sy=Math.max(0,r[1]);
-    const sw=Math.min(640-sx,r[2]),sh=Math.min(640-sy,r[3]);
-    if(sw<48||sh<48)continue;
-    // 小 ROI 单次推理即可；大 ROI 才拆 2×2，避免视频模式下无谓的耗时
-    const blocks=(sw>=200&&sh>=160)?halves:[[0,0]];
-    const cw=Math.min(sw*(blocks.length>1?.62:1),640),ch=Math.min(sh*(blocks.length>1?.62:1),640);
-    for(const [ox,oy] of blocks){
-      const x=Math.max(0,Math.min(sx+sw*ox,640-cw));
-      const y=Math.max(0,Math.min(sy+sh*oy,640-ch));
-      const sub=document.createElement('canvas');sub.width=640;sub.height=640;
-      sub.getContext('2d',{willReadFrequently:true}).drawImage(full,x,y,cw,ch,0,0,640,640);
-      const rr=(await inferCanvas(sub,{classes:[0,2],conf:Math.max(.06,conf-.05),iou,limit:12})).boxes;
-      for(const b of rr)out.push([x+b[0]/640*cw,y+b[1]/640*ch,b[2]/640*cw,b[3]/640*ch,b[4],b[5]]);
-      tiles++;
-    }
-  }
-  return {boxes:out,tiles};
-}
 async function inferSmart(source,opt){
-  opt=opt||{};const conf=+($('#confRange')?$('#confRange').value:0.10),iou=+($('#iouRange')?$('#iouRange').value:0.45);
+  opt=opt||{};const conf=+($('#confRange')?$('#confRange').value:0.25),iou=+($('#iouRange')?$('#iouRange').value:0.45);
   const t0=performance.now();const full=toCanvas(source);
-  // 基础推理阈值抬高，先砍掉大量低质量背景候选
-  let boxes=(await inferCanvas(full,{classes:[0,2],conf:Math.max(conf,.15),iou})).boxes.slice();
+  // 模型对香烟/烟雾本身就在整帧尺度上训得很好：单次全帧推理是主力，不再做会拉伸变形的分块
+  let boxes=(await inferCanvas(full,{classes:[0,2],conf,iou})).boxes.slice();
   let roiUsed=0,constrained=false;
-  if(opt.roi&&$('#roiSwitch')&&$('#roiSwitch').checked){
-    const persons=(await inferCanvas(full,{classes:[1],conf:0.25,iou:0.45,limit:12})).boxes;
+  if(opt.roi&&$('#roiSwitch')&&$('#roiSwitch').checked&&boxes.length){
+    const persons=(await inferCanvas(full,{classes:[1],conf:0.30,iou:0.45,limit:8})).boxes;
     if(persons.length){
-      const rois=persons.map(p=>smokingROI(p,0.3));
-      // 关键修复：吸烟区外的全帧误检一律丢弃（墙上物体、衣架等）
-      boxes=boxes.filter(b=>rois.some(r=>centerInBox(b,r,6)));
-      const tiled=await inferTiled(full,rois,conf,iou);
-      boxes=boxes.concat(tiled.boxes);
-      roiUsed=tiled.tiles;constrained=true;
-    }else{
-      // 画面里找不到人：保守输出，宁可漏检也不报背景误检
-      boxes=boxes.filter(b=>b[4]>=Math.max(0.35,conf*2.5));
+      const rois=persons.map(p=>smokingROI(p,0.33));
+      // 只丢弃明显落在所有吸烟区之外的检出；人框覆盖大半画面时约束自然放宽，不会误杀嘴边真烟
+      const inZone=b=>rois.some(r=>centerInBox(b,r,10));
+      boxes=boxes.filter(b=>inZone(b)||b[4]>=0.55);  // 高置信目标始终保留
+      constrained=true;roiUsed=1;
     }
   }
   return {boxes:nms(boxes,iou,30),ms:performance.now()-t0,roiUsed,constrained};
@@ -670,10 +643,11 @@ function renderOverlay(boxes){
   $('#statCount').textContent=boxes.length;$('#statConf').textContent=boxes.length?Math.max(...boxes.map(b=>b[4])).toFixed(2):'--';
   renderList(boxes);
 }
-function drawBoxesOnCanvas(ctx,boxes,W,H,scale,clear){
+function drawBoxesOnCanvas(ctx,boxes,W,H,scaleX,scaleY,clear){
+  if(scaleY==null)scaleY=scaleX;
   if(clear!==false)ctx.clearRect(0,0,W,H);
   boxes.forEach(b=>{
-    const x=b[0]*scale,y=b[1]*scale,w=b[2]*scale,h=b[3]*scale;
+    const x=b[0]*scaleX,y=b[1]*scaleY,w=b[2]*scaleX,h=b[3]*scaleY;
     ctx.strokeStyle=boxColor(b[5]);ctx.lineWidth=Math.max(2,W/500);ctx.strokeRect(x,y,w,h);
     const label=(b[5]===2?'smoke':'cigarette')+' '+b[4].toFixed(2);
     ctx.font=`bold ${Math.max(11,W/80)}px sans-serif`;const tw=ctx.measureText(label).width;
@@ -687,7 +661,7 @@ function drawVideoFrame(){
   const ctx=resultCanvas.getContext('2d'),W=resultCanvas.width,H=resultCanvas.height;
   ctx.clearRect(0,0,W,H);
   ctx.drawImage(src,0,0,W,H);
-  drawBoxesOnCanvas(ctx,lastBoxes,W,H,W/640,false);
+  drawBoxesOnCanvas(ctx,lastBoxes,W,H,W/640,H/640,false);
 }
 
 /* ---- Detection dispatch ---- */
@@ -764,7 +738,7 @@ function exportFrame(){
   if(!src){toast('没有可导出的画面');return}
   const c=document.createElement('canvas');c.width=src.naturalWidth||src.width||640;c.height=src.naturalHeight||src.height||400;
   const ctx=c.getContext('2d');ctx.drawImage(src,0,0,c.width,c.height);
-  if(!(mode==='video'||mode==='camera'))drawBoxesOnCanvas(ctx,lastBoxes,c.width,c.height,c.width/640,false);
+  if(!(mode==='video'||mode==='camera'))drawBoxesOnCanvas(ctx,lastBoxes,c.width,c.height,c.width/640,c.height/640,false);
   c.toBlob(b=>{if(b){download(b,'smokeguard_frame.png');toast('标注帧已导出')}},'image/png');
 }
 $('#expJson').addEventListener('click',exportJSON);$('#expCsv').addEventListener('click',exportCSV);$('#expFrame').addEventListener('click',exportFrame);
@@ -804,33 +778,33 @@ async function runAB(){
   try{
     await loadOrt();
     const full=toCanvas(src);
+    const conf=+($('#confRange')?.value??0.25),iou=+($('#iouRange')?.value??0.45);
+    // A 基线：整帧单次、全类别（含人框）、低阈值 —— 背景误检与人框混入
     const tA=performance.now();
-    const A=await inferCanvas(full,{classes:[0,1,2],conf:0.25,iou:0.45,limit:30});
+    const A=await inferCanvas(full,{classes:[0,1,2],conf:0.10,iou:0.45,limit:30});
     const msA=performance.now()-tA;
+    // B 优化：只取烟/烟霭类 + 人体吸烟区约束 + 合理阈值 —— 与「开始检测」完全同一套逻辑
     const tB=performance.now();
-    const persons=(await inferCanvas(full,{classes:[1],conf:0.25,iou:0.45,limit:12})).boxes;
-    let B=[];
-    if(persons.length){
-      const rois=persons.map(p=>smokingROI(p,0.3));
-      const baseB=(await inferCanvas(full,{classes:[0,2],conf:0.15,iou:0.45,limit:30})).boxes
-        .filter(b=>rois.some(r=>centerInBox(b,r,6)));
-      const tiled=await inferTiled(full,rois,0.10,0.45);
-      B=nms(baseB.concat(tiled.boxes),0.45,30);
-    }else{
-      B=nms((await inferCanvas(full,{classes:[0,2],conf:0.32,iou:0.45,limit:30})).boxes,0.45,30);
+    let B=(await inferCanvas(full,{classes:[0,2],conf:Math.max(conf,0.10),iou,limit:30})).boxes.slice();
+    const persons=(await inferCanvas(full,{classes:[1],conf:0.30,iou:0.45,limit:8})).boxes;
+    if(persons.length&&B.length){
+      const rois=persons.map(p=>smokingROI(p,0.33));
+      B=B.filter(b=>rois.some(r=>centerInBox(b,r,10))||b[4]>=0.55);
     }
+    B=nms(B,iou,30);
     const msB=performance.now()-tB;
     const ca=$('#abCanvasA'),cb=$('#abCanvasB');ca.width=560;ca.height=315;cb.width=560;cb.height=315;
     drawAB(ca,A.boxes);drawAB(cb,B);
     $('#abPhA').style.display='none';$('#abPhB').style.display='none';
     $('#abBadgeA').style.display='block';$('#abBadgeB').style.display='block';
-    $('#abBadgeA').innerHTML='检出框：<b>'+A.boxes.length+'</b>';
-    $('#abBadgeB').innerHTML='检出框：<b>'+B.boxes.length+'</b>';
     const hit=a=>a.filter(b=>b[5]===0||b[5]===2).length;
-    $('#abAHit').textContent=hit(A.boxes);$('#abBHit').textContent=hit(B.boxes);
+    const scoreA=hit(A.boxes),scoreB=hit(B.boxes);
+    $('#abBadgeA').innerHTML='有效检出：<b>'+scoreA+'</b>';
+    $('#abBadgeB').innerHTML='有效检出：<b>'+scoreB+'</b>';
+    $('#abAHit').textContent=scoreA;$('#abBHit').textContent=scoreB;
     $('#abAErr').textContent=A.boxes.filter(b=>b[5]===1).length;$('#abBErr').textContent=B.boxes.filter(b=>b[5]===1).length;
     $('#abATime').textContent=msA.toFixed(0);$('#abBTime').textContent=msB.toFixed(0);
-    toast('A/B 对照完成 · 基线 '+A.boxes.length+' 框 / 分块 '+B.boxes.length+' 框');
+    toast('A/B 对照完成 · 基线有效 '+scoreA+' / 优化后 '+scoreB);
   }catch(e){alert('A/B 对照失败：'+(e.message||e));console.error(e)}
   btn.disabled=false;btn.textContent='▶ 运行 A/B 对照';
 }
