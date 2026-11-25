@@ -211,7 +211,8 @@ pre code{background:none;padding:0}
 .gal-card{border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--surface);cursor:pointer;transition:.18s;text-align:left;padding:0}
 .gal-card:hover{transform:translateY(-3px);box-shadow:var(--shadow);border-color:var(--primary)}
 .gal-thumb{aspect-ratio:4/3;overflow:hidden;background:var(--surface-2);position:relative}
-.gal-thumb svg{width:100%;height:100%;display:block}
+.gal-thumb svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.gal-thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
 .gal-meta{padding:10px 12px}
 .gal-meta b{font-size:12px;display:block}
 .gal-meta span{font-size:10.5px;color:var(--muted)}
@@ -514,7 +515,7 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;bac
           </div>
         </div>
 
-        <div class="section-head" style="margin-top:8px"><div><h2>场景样本预览</h2><p>内置矢量示意场景（非原数据集图片），点击任意样本进入检测演示</p></div></div>
+        <div class="section-head" style="margin-top:8px"><div><h2>场景样本预览</h2><p>内置实景照片场景（演示素材，非原数据集图片），点击任意样本进入检测演示</p></div></div>
         <div class="gallery" id="gallery"></div>
 
         <div class="card pad" style="margin-top:16px">
@@ -606,7 +607,7 @@ yolo train data=train/smoking.yaml \
       <!-- ============ DETECT ============ -->
       <section class="section" id="sec-detect">
         <div class="section-head"><div><h2>检测演示</h2><p>上传图片或使用内置场景，体验吸烟目标检测的完整交互</p></div><span class="tag red" id="detectModeTag">演示推理</span></div>
-        <div class="notice" style="margin-bottom:15px"><svg class="icon"><use href="#i-alert"/></svg><div id="modeNotice">上传图片 / 摄像头走<strong>浏览器端真实 YOLO 推理</strong>（模型在首次检测时从本站加载（约 12MB），之后浏览器缓存）；内置矢量场景因是插画，沿用演示框展示交互。也可按「接入指南」切换到本地后端使用自己训练的模型。</div></div>
+        <div class="notice" style="margin-bottom:15px"><svg class="icon"><use href="#i-alert"/></svg><div id="modeNotice">上传图片 / 摄像头 / 内置实景场景均走<strong>浏览器端真实 YOLO 推理</strong>（模型在首次检测时从本站加载（约 12MB），之后浏览器缓存）。也可按「接入指南」切换到本地后端使用自己训练的模型。</div></div>
 
         <div class="detect-toolbar">
           <div class="scene-chips" id="sceneChips">
@@ -892,18 +893,28 @@ function sceneSVG(key, p){
 }
 
 const SCENES = {
-  park:  {label:'园区场景', svg:p=>sceneSVG('park',p),  boxes:[[452,168,84,72,0.93],[486,154,46,62,0.61]]},
-  office:{label:'室内场景', svg:p=>sceneSVG('office',p),boxes:[[374,196,82,68,0.88],[402,180,48,50,0.55]]},
-  cctv:  {label:'监控视角', svg:p=>sceneSVG('cctv',p),  boxes:[[354,176,84,72,0.85],[388,162,48,52,0.48]]},
-  drone: {label:'无人机俯视',svg:p=>sceneSVG('drone',p), boxes:[[358,76,78,80,0.79],[376,62,46,56,0.42]]}
+  park:  {label:'园区场景', file:'park.jpg',   svg:p=>sceneSVG('park',p),  boxes:[[452,168,84,72,0.93],[486,154,46,62,0.61]]},
+  office:{label:'室内场景', file:'office.jpg', svg:p=>sceneSVG('office',p),boxes:[[374,196,82,68,0.88],[402,180,48,50,0.55]]},
+  cctv:  {label:'监控视角', file:'cctv.jpg',   svg:p=>sceneSVG('cctv',p),  boxes:[[354,176,84,72,0.85],[388,162,48,52,0.48]]},
+  drone: {label:'无人机俯视',file:'drone.jpg', svg:p=>sceneSVG('drone',p), boxes:[[358,76,78,80,0.79],[376,62,46,56,0.42]]}
 };
 let sceneSeq = 0;
 const nextPrefix = ()=> 's' + (++sceneSeq);
 
+/* 实景照片源：本地直连，线上优先加速通道（GitHub Pages 跨境较慢），失败回退相对路径 */
+const RAW_BASE = 'https://raw.githubusercontent.com/HH200606/smokeguard-yolo/main/';
+const sceneRel = k => 'assets/scenes/' + SCENES[k].file;
+function sceneCandidates(k){
+  const rel = sceneRel(k);
+  const isLocal = location.protocol === 'file:' || /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
+  const accel = 'https://gh-proxy.com/' + RAW_BASE + rel;
+  return isLocal ? [rel, accel] : [accel, rel];
+}
+
 /* Gallery */
 $('#gallery').innerHTML = Object.keys(SCENES).map(k=>{
   const s = SCENES[k];
-  return `<button class="gal-card" data-scene="${k}"><div class="gal-thumb">${s.svg(nextPrefix())}<span class="overlay">${s.label}</span><span class="clickhint">载入检测</span></div><div class="gal-meta"><b>${s.label}</b><span>矢量示意 · 640 × 400</span></div></button>`;
+  return `<button class="gal-card" data-scene="${k}"><div class="gal-thumb">${s.svg(nextPrefix())}<img src="${sceneCandidates(k)[0]}" alt="${s.label}" loading="lazy" decoding="async" onerror="this.remove()"><span class="overlay">${s.label}</span><span class="clickhint">载入检测</span></div><div class="gal-meta"><b>${s.label}</b><span>实景照片 · 1024 × 640</span></div></button>`;
 }).join('');
 $$('.gal-card').forEach(c=>c.addEventListener('click', ()=>{
   loadScene(c.dataset.scene);
@@ -995,12 +1006,11 @@ function loadOrt(){
       ort.env.wasm.numThreads = 1;
       ort.env.wasm.simd = true;
       const GH = 'https://hh200606.github.io/smokeguard-yolo/';
-      const CDN = 'https://cdn.jsdelivr.net/gh/HH200606/smokeguard-yolo@main/';
-      const SOURCES = [
-        {name:'加速节点', base:CDN},
-        {name:'在线', base:GH},
-        {name:'本地', base:''}
-      ];
+      const ACCEL = 'https://gh-proxy.com/' + RAW_BASE;
+      const isLocalPage = location.protocol === 'file:' || /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
+      const SOURCES = isLocalPage
+        ? [{name:'本地', base:''}, {name:'加速节点', base:ACCEL}]
+        : [{name:'加速节点', base:ACCEL}, {name:'在线', base:GH}, {name:'本地', base:''}];
       const gunzip = async (buf)=>{
         if(typeof DecompressionStream === 'undefined') throw new Error('浏览器不支持解压');
         const ds = new DecompressionStream('gzip');
@@ -1117,16 +1127,41 @@ function stopCamera(){
   if(cameraStream){ cameraStream.getTracks().forEach(t=>t.stop()); cameraStream = null; }
   $('#cameraLabel').textContent = '打开摄像头';
 }
+let sceneImgPromise = null;   // 内置场景照片加载中时，点检测先等待（保证走真实推理）
 function loadScene(key){
   stopCamera();
   currentScene = key; sourceMode = 'scene'; currentImage = null;
   $$('.chip').forEach(c=>c.classList.toggle('active', c.dataset.scene === key));
-  const html = SCENES[key].svg(nextPrefix());
-  mountMedia(stageSource, html);
-  mountMedia(stageResult, html);
-  $('#sourceName').textContent = '内置场景 · ' + SCENES[key].label;
+  const s = SCENES[key];
+  const svgHtml = s.svg(nextPrefix());
+  mountMedia(stageSource, svgHtml);   // 先用矢量占位，照片就绪后替换，避免切换闪白
+  mountMedia(stageResult, svgHtml);
+  $('#sourceName').textContent = '内置场景 · ' + s.label;
   setBadge('SOURCE');
   resetResult();
+
+  const cands = sceneCandidates(key);
+  sceneImgPromise = new Promise(resolve=>{
+    const tryLoad = i => {
+      if(i >= cands.length){ resolve(); return; }   // 全部失败：保留矢量图（演示框模式）
+      const img = new Image();
+      img.decoding = 'async';
+      img.onload = ()=>{
+        if(currentScene !== key || sourceMode === 'camera'){ resolve(); return; }
+        const html = `<img class="scene" src="${img.src}" alt="${s.label}">`;
+        mountMedia(stageSource, html);
+        mountMedia(stageResult, html);
+        sourceMode = 'image';        // 实景照片 → 走浏览器端真实 YOLO 推理
+        currentImage = img;
+        $('#sourceName').textContent = '内置场景 · ' + s.label + ' · 实景照片';
+        setBadge('PHOTO');
+        resolve();
+      };
+      img.onerror = ()=> tryLoad(i+1);
+      img.src = cands[i];
+    };
+    tryLoad(0);
+  });
 }
 $$('.chip').forEach(c=>c.addEventListener('click', ()=> loadScene(c.dataset.scene)));
 
@@ -1255,6 +1290,12 @@ function captureFrame(isVideo){
 $('#detectBtn').addEventListener('click', async ()=>{
   if(busy) return;
   if(sourceMode === 'camera' && !stageSource.querySelector('video')){ alert('请先打开摄像头'); return; }
+  if(sourceMode === 'scene' && sceneImgPromise){        // 场景照片还在路上，等它到位再判断
+    const btn0 = $('#detectBtn'); btn0.disabled = true;
+    try{ await sceneImgPromise; }catch(e){}
+    btn0.disabled = false;
+    if(busy) return;
+  }
   if(realMode && sourceMode === 'scene'){ alert('真实模型模式下请使用「上传图片」或「打开摄像头」提供画面。'); return; }
   busy = true; const btn = $('#detectBtn'); btn.disabled = true;
   const t0 = performance.now();
@@ -1313,7 +1354,7 @@ function updateModeUI(){
   $('#detectModeTag').className = 'tag ' + (realMode ? 'green' : 'blue');
   $('#modeNotice').innerHTML = realMode
     ? '当前为<strong>本地后端模式</strong>：检测请求将发送至 <code>http://localhost:8000/detect</code>，请先启动后端服务并加载 <code>best.pt</code>。'
-    : '上传图片 / 摄像头走<strong>浏览器端真实 YOLO 推理</strong>（模型在首次检测时从本站加载（约 12MB），之后浏览器缓存）；内置矢量场景因是插画，沿用演示框展示交互。也可按「接入指南」切换到本地后端使用自己训练的模型。';
+    : '上传图片 / 摄像头 / 内置实景场景均走<strong>浏览器端真实 YOLO 推理</strong>（模型在首次检测时从本站加载（约 12MB），之后浏览器缓存）。也可按「接入指南」切换到本地后端使用自己训练的模型。';
 }
 function toggleMode(){ realMode = !realMode; updateModeUI(); }
 $('#toggleModeBtn').addEventListener('click', toggleMode);
