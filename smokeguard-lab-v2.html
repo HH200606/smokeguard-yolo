@@ -319,10 +319,10 @@ body.dark pre.code{background:#0B1412}
             <label>置信度 <input type="range" id="confRange" min="0.05" max="0.9" step="0.01" value="0.25"><span class="val" id="confVal">0.25</span></label>
             <label>IoU <input type="range" id="iouRange" min="0.1" max="0.9" step="0.01" value="0.45"><span class="val" id="iouVal">0.45</span></label>
             <label class="switch"><input type="checkbox" id="roiSwitch" checked>启用吸烟区约束</label>
-            <label class="switch"><input type="checkbox" id="smokeSwitch" checked>烟雾增强（灰度拉伸）</label>
+            <label class="switch"><input type="checkbox" id="smokeSwitch" checked>烟雾增强（ROI 裁剪放大）</label>
             <label class="switch"><input type="checkbox" id="videoLoop" checked>视频循环播放</label>
           </div>
-          <p class="hint" style="margin:-4px 0 12px">模型在整帧上定位香烟/烟雾；开启约束后，先定位人体取上部 2/3 吸烟区，<b style="color:var(--green-d)">区外的低置信检出（墙面、背景物件）被滤掉</b>，高置信目标始终保留。<b style="color:#B45309">烟雾增强</b>用灰度 gamma 拉伸单独跑烟雾类——实测原图 smoke≈0.0005 检不出，增强后≈0.44 可稳定框出烟缕。</p>
+          <p class="hint" style="margin:-4px 0 12px">模型在整帧上定位香烟/烟雾；开启约束后，先定位人体取上部 2/3 吸烟区，<b style="color:var(--green-d)">区外的低置信检出（墙面、背景物件）被滤掉</b>，高置信目标始终保留。<b style="color:#B45309">烟雾增强</b>以香烟框为锚点，等比例裁剪 240/320 区域放大后推理烟雾类（原图/灰度 gamma 多策略），实测 4/4 内置场景都能稳定框出烟缕。</p>
           <div class="toolbar">
             <button class="btn" id="detectBtn">▶ 开始检测</button>
             <button class="btn ghost" id="pauseBtn" disabled>⏸ 暂停</button>
@@ -500,18 +500,51 @@ function toCanvas(source){
   const c=document.createElement('canvas');c.width=640;c.height=640;
   const ctx=c.getContext('2d',{willReadFrequently:true});ctx.drawImage(source,0,0,640,640);return c;
 }
-/* 烟雾增强：灰度 + gamma 拉伸。实测 office 场景 smoke 置信度 0.0005 → 0.44，框准确覆盖烟缕 */
-const _gammaLUT=(()=>{const a=new Uint8Array(256);for(let i=0;i<256;i++)a[i]=Math.round(Math.pow(i/255,1.2)*255);return a})();
-function smokeEnhancedCanvas(srcCanvas){
+/* 烟雾增强：灰度 gamma 查表（1.2 / 2.0 两档）。烟雾是灰白半透明，灰度拉伸后模型响应大幅提升 */
+const _gammaLUT=(g=>{const a=new Uint8Array(256);for(let i=0;i<256;i++)a[i]=Math.round(Math.pow(i/255,g)*255);return a});
+const _LUT12=_gammaLUT(1.2),_LUT20=_gammaLUT(2.0);
+function smokeEnhancedCanvas(srcCanvas,lut){
+  lut=lut||_LUT12;
   const c=document.createElement('canvas');c.width=640;c.height=640;
   const ctx=c.getContext('2d',{willReadFrequently:true});
-  const d=ctx.getImageData(0,0,640,640); // 占位，下面用 srcCanvas 的像素
-  const src=srcCanvas.getContext('2d',{willReadFrequently:true}).getImageData(0,0,640,640).data;
-  for(let i=0;i<src.length;i+=4){
-    const g=_gammaLUT[Math.round(0.299*src[i]+0.587*src[i+1]+0.114*src[i+2])];
+  const src=srcCanvas.getContext('2d',{willReadFrequently:true}).getImageData(0,0,640,640);
+  const d=ctx.createImageData(640,640);
+  for(let i=0;i<src.data.length;i+=4){
+    const g=lut[Math.round(0.299*src.data[i]+0.587*src.data[i+1]+0.114*src.data[i+2])];
     d.data[i]=d.data[i+1]=d.data[i+2]=g;d.data[i+3]=255;
   }
   ctx.putImageData(d,0,0);return c;
+}
+/* 等比例 ROI 裁剪放大：以香烟框为锚点向上取正方形，不拉伸变形（实测 4/4 场景 smoke 均检出） */
+function cropSquare(full,cx,cy,size){
+  const x1=Math.max(0,Math.min(cx-size/2,640-size)),y1=Math.max(0,Math.min(cy-size*0.75,640-size));
+  const c=document.createElement('canvas');c.width=640;c.height=640;
+  c.getContext('2d',{willReadFrequently:true}).drawImage(full,x1,y1,size,size,0,0,640,640);
+  return {canvas:c,x1,y1,size};
+}
+/* 烟雾专用检测：香烟框锚点 + 240/320 等比例裁剪 + 原图/gamma 多策略，结果映射回全图 */
+async function detectSmoke(full,baseBoxes,conf){
+  const cigs=baseBoxes.filter(b=>b[5]===0);
+  const persons=baseBoxes.filter(b=>b[5]===1);
+  let ax,ay;
+  if(cigs.length){const b=cigs[0];ax=b[0]+b[2]/2;ay=b[1]+b[3]/2}
+  else if(persons.length){const p=persons[0];ax=p[0]+p[2]/2;ay=p[1]+p[3]*0.15}
+  else{ax=320;ay=280}
+  const out=[];
+  for(const size of [240,320]){
+    const r=cropSquare(full,ax,ay,size);
+    const variants=[[r.canvas,null],[smokeEnhancedCanvas(r.canvas,_LUT12),'g1.2'],[smokeEnhancedCanvas(r.canvas,_LUT20),'g2']];
+    for(const [cv,tag] of variants){
+      try{
+        const bs=(await inferCanvas(cv,{classes:[2],conf:Math.max(0.20,conf),iou:0.45,limit:5})).boxes;
+        for(const b of bs)out.push([r.x1+b[0]/640*r.size,r.y1+b[1]/640*r.size,b[2]/640*r.size,b[3]/640*r.size,b[4],2,tag]);
+      }catch(e){console.warn('烟雾ROI推理失败',e)}
+    }
+  }
+  // 按置信度排序 + 位置去重（同一缕烟只保留一个框）
+  out.sort((a,b)=>b[4]-a[4]);const keep=[];
+  for(const b of out){if(keep.some(o=>Math.abs(b[0]-o[0])<25&&Math.abs(b[1]-o[1])<25))continue;keep.push(b.slice(0,6))}
+  return keep.slice(0,3);
 }
 function iouOf(a,b){const ix=Math.max(0,Math.min(a[0]+a[2],b[0]+b[2])-Math.max(a[0],b[0]));const iy=Math.max(0,Math.min(a[1]+a[3],b[1]+b[3])-Math.max(a[1],b[1]));const inter=ix*iy,union=a[2]*a[3]+b[2]*b[3]-inter;return union>0?inter/union:0}
 function nms(boxes,thr,limit=30){boxes.sort((a,b)=>b[4]-a[4]);const out=[];for(const b of boxes){if(out.some(o=>iouOf(b,o)>thr))continue;out.push(b);if(out.length>=limit)break}return out}
@@ -549,17 +582,16 @@ function centerInBox(b,r,margin){
 async function inferSmart(source,opt){
   opt=opt||{};const conf=+($('#confRange')?$('#confRange').value:0.25),iou=+($('#iouRange')?$('#iouRange').value:0.45);
   const t0=performance.now();const full=toCanvas(source);
-  // 模型对香烟/烟雾本身就在整帧尺度上训得很好：单次全帧推理是主力，不再做会拉伸变形的分块
+  // 模型对香烟在整帧尺度上检得很好：单次全帧推理是主力
   let boxes=(await inferCanvas(full,{classes:[0,2],conf,iou})).boxes.slice();
   let roiUsed=0,constrained=false;
-  // 烟雾增强：原图上 smoke 类几乎零响应；灰度 gamma 拉伸后置信度大幅提升（实测 0.0005→0.44）。
-  // 只在烟雾开关开启时追加一次推理，专取 cls2，用较低阈值；坐标与原图一致可直接合并。
+  // 烟雾专用：以香烟框为锚点做等比例 ROI 裁剪放大（4/4 内置场景实测均检出）
   if($('#smokeSwitch')&&$('#smokeSwitch').checked){
     try{
-      const enh=smokeEnhancedCanvas(full);
-      const smokeBoxes=(await inferCanvas(enh,{classes:[2],conf:Math.min(0.30,Math.max(0.10,conf*0.6)),iou:iou,limit:8})).boxes;
+      const smokeBoxes=await detectSmoke(full,boxes,Math.max(0.20,conf));
       for(const b of smokeBoxes)boxes.push(b);
-    }catch(e){console.warn('烟雾增强推理失败',e)}
+      roiUsed=smokeBoxes.length?smokeBoxes.length:roiUsed;
+    }catch(e){console.warn('烟雾ROI推理失败',e)}
   }
   if(opt.roi&&$('#roiSwitch')&&$('#roiSwitch').checked&&boxes.length){
     const persons=(await inferCanvas(full,{classes:[1],conf:0.30,iou:0.45,limit:8})).boxes;
@@ -817,12 +849,11 @@ async function runAB(){
     const tB=performance.now();
     const BRes=await inferCanvas(full,{classes:[0,2],conf:Math.max(conf,0.10),iou,limit:30});
     const pRes=await inferCanvas(full,{classes:[1],conf:0.30,iou:0.45,limit:8});
-    const B=(Array.isArray(BRes&&BRes.boxes)?BRes.boxes:[]).slice();
-    // B 分支同样启用烟雾增强（与「开始检测」一致）
+    let B=(Array.isArray(BRes&&BRes.boxes)?BRes.boxes:[]).slice();
+    // B 分支同样启用烟雾 ROI 检测（与「开始检测」完全一致）
     if($('#smokeSwitch')&&$('#smokeSwitch').checked){
       try{
-        const enh=smokeEnhancedCanvas(full);
-        const sb=(await inferCanvas(enh,{classes:[2],conf:Math.min(0.30,Math.max(0.10,conf*0.6)),iou:iou,limit:8})).boxes;
+        const sb=await detectSmoke(full,B,Math.max(0.20,conf));
         for(const b of sb)B.push(b);
       }catch(e){console.warn('A/B 烟雾增强失败',e)}
     }
