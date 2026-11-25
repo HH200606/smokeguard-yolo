@@ -904,9 +904,11 @@ const nextPrefix = ()=> 's' + (++sceneSeq);
 /* 实景照片源：本地直连，线上优先加速通道（GitHub Pages 跨境较慢），失败回退相对路径 */
 const RAW_BASE = 'https://raw.githubusercontent.com/HH200606/smokeguard-yolo/main/';
 const sceneRel = k => 'assets/scenes/' + SCENES[k].file;
+let forceSameOrigin = false;   // 加速通道图片无法读像素时置 true，只用同源地址
 function sceneCandidates(k){
   const rel = sceneRel(k);
   const isLocal = location.protocol === 'file:' || /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
+  if(forceSameOrigin) return [rel];
   const accel = 'https://gh-proxy.com/' + RAW_BASE + rel;
   return isLocal ? [rel, accel] : [accel, rel];
 }
@@ -1146,9 +1148,11 @@ function loadScene(key){
       if(i >= cands.length){ resolve(); return; }   // 全部失败：保留矢量图（演示框模式）
       const img = new Image();
       img.decoding = 'async';
+      // 线上图片走加速通道属跨域，必须带 CORS 才能 drawImage/getImageData；file:// 打开时加了反而加载不了
+      if(location.protocol !== 'file:') img.crossOrigin = 'anonymous';
       img.onload = ()=>{
         if(currentScene !== key || sourceMode === 'camera'){ resolve(); return; }
-        const html = `<img class="scene" src="${img.src}" alt="${s.label}">`;
+        const html = `<img class="scene" src="${img.src}" alt="${s.label}"${location.protocol === 'file:' ? '' : ' crossorigin="anonymous"'}>`;
         mountMedia(stageSource, html);
         mountMedia(stageResult, html);
         sourceMode = 'image';        // 实景照片 → 走浏览器端真实 YOLO 推理
@@ -1287,7 +1291,8 @@ function captureFrame(isVideo){
   }
   return new Promise(res=>c.toBlob(res,'image/jpeg',.9));
 }
-$('#detectBtn').addEventListener('click', async ()=>{
+$('#detectBtn').addEventListener('click', ()=> doDetect());
+async function doDetect(isRetry){
   if(busy) return;
   if(sourceMode === 'camera' && !stageSource.querySelector('video')){ alert('请先打开摄像头'); return; }
   if(sourceMode === 'scene' && sceneImgPromise){        // 场景照片还在路上，等它到位再判断
@@ -1299,6 +1304,7 @@ $('#detectBtn').addEventListener('click', async ()=>{
   if(realMode && sourceMode === 'scene'){ alert('真实模型模式下请使用「上传图片」或「打开摄像头」提供画面。'); return; }
   busy = true; const btn = $('#detectBtn'); btn.disabled = true;
   const t0 = performance.now();
+  let needRetry = false;
   try{
     if(realMode){
       const blob = sourceMode === 'scene' ? null : await captureFrame(sourceMode === 'camera');
@@ -1340,9 +1346,20 @@ $('#detectBtn').addEventListener('click', async ()=>{
       renderResults(filterBoxes(boxes,+$('#confRange').value,+$('#iouRange').value), performance.now()-t0);
     }
   }catch(err){
-    alert('推理失败：' + err.message + '\n请刷新页面重试；如需使用自己训练的模型，请切换为本地后端。');
-  }finally{ busy=false; btn.disabled=false; }
-});
+    const msg = String(err && err.message || '');
+    if(/tainted|cross-origin/i.test(msg) && !isRetry && currentScene && SCENES[currentScene]){
+      // 加速通道图片未带 CORS 时 canvas 会被污染：改用同源地址重载一次再推理
+      needRetry = true;
+      forceSameOrigin = true;
+      loadScene(currentScene);
+      try{ await sceneImgPromise; }catch(e){}
+    }else{
+      alert('推理失败：' + msg + '\n请刷新页面重试；如需使用自己训练的模型，请切换为本地后端。');
+    }
+  }
+  busy = false; btn.disabled = false;
+  if(needRetry && sourceMode === 'image') return doDetect(true);
+}
 $('#confRange').addEventListener('input', e=>{ $('#confVal').textContent = (+e.target.value).toFixed(2); redraw(); });
 $('#iouRange').addEventListener('input', e=>{ $('#iouVal').textContent = (+e.target.value).toFixed(2); redraw(); });
 
